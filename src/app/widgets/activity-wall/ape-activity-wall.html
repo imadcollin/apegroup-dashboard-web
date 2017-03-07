@@ -22,6 +22,7 @@
                 justify-content: space-between;
                 margin-bottom: 4.8rem;
                 align-items: baseline;
+                flex-shrink: 0;
             }
 
             .header h1 {
@@ -125,7 +126,7 @@
         </div>
 
         <div class="card-container">
-            <template is="dom-repeat" items="[[users]]" as="user" sort="_sortByFirstName">
+            <template is="dom-repeat" items="[[_users]]" as="user" sort="_sortByFirstName">
                 <div class="card">
                     <div class="birthday" has-birth-day$="[[user.hasBirthdayToday]]"></div>
                     <iron-image class="profile-img" sizing="cover" src="[[user.imageURL]]" alt="[[user.firstname]] [[user.lastname]]"></iron-image>
@@ -151,15 +152,41 @@
             ],
 
             properties: {
-                users: {
+                _users: {
                     type: Array,
-                    value: () => []
+                    observer: `_observerUsers`
                 },
-                usersRef: {
+                _usersRef: {
                     type: Object,
                     value: () => null
-
+                },
+                active: {
+                    type: Boolean,
+                    value: false
                 }
+            },
+
+            activate() {
+                this._usersRef = firebase.database().ref(`/users`);
+                this._usersRef.on(`value`, (data) => {
+                    const items = data.val();
+                    this._users = Object.keys(items).map(key => items[key]);
+                });
+            },
+
+            deactivate() {
+                this._users = null;
+                this._birthdayUsers = null;
+                if (this._usersRef) {
+                    this._usersRef.off();
+                }
+            },
+
+            _observerUsers(users) {
+                this.active = users.length !== 0;
+                this.fire(`activity-state`, {
+                    active: users.length !== 0
+                });
             },
 
             _sortByFirstName(a, b) {

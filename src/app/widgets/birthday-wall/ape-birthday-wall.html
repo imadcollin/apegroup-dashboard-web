@@ -69,7 +69,7 @@
         <h1>Grattis på födelsedagen!</h1>
 
         <div class="card-container">
-            <template is="dom-repeat" items="[[users]]" as="user" sort="_sortByFirstName">
+            <template is="dom-repeat" items="[[_users]]" as="user" sort="_sortByFirstName">
                 <div class="card">
                     <iron-image class="profile-img" sizing="cover" src="[[user.imageURL]]" alt="[[user.firstname]] [[user.lastname]]"></iron-image>
                     <div class="name">[[user.firstname]] [[user.lastname]]</div>
@@ -90,10 +90,38 @@
             ],
 
             properties: {
-                users: {
+                _users: {
                     type: Array,
-                    value: () => []
+                    observer: `_observerUsers`
                 },
+                _usersRef: {
+                    type: Object,
+                    value: () => null
+                },
+                active: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            activate() {
+                this._usersRef = firebase.database().ref(`/users`).orderByChild(`hasBirthdayToday`).equalTo(true).limitToFirst(2);
+                this._usersRef.on(`value`, (data) => {
+                    const items = data.val();
+                    console.log(items);
+                    if (items) {
+                        this._users = Object.keys(items).map(key => items[key]);
+                    } else {
+                        this._users = [];
+                    }
+                });
+            },
+
+            _observerUsers(users) {
+                this.active = users.length !== 0;
+                this.fire(`birthday-state`, {
+                    active: users.length !== 0
+                });
             },
 
             _sortByFirstName(a, b) {

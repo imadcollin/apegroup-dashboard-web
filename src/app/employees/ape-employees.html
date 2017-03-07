@@ -1,4 +1,6 @@
 <link rel="import" href="../../assets/libs/polymer/polymer.html">
+<link rel="import" href="../../assets/libs/iron-pages/iron-pages.html">
+<link rel="import" href="../shared/firebase/firebase.html">
 <link rel="import" href="../widgets/activity-wall/ape-activity-wall.html">
 <link rel="import" href="../widgets/birthday-wall/ape-birthday-wall.html">
 
@@ -24,23 +26,23 @@
                 flex-grow: 1;
             }
 
-            .widget[active] {
-                animation: fadeIn .7s ease-in;
-            }
-
-            .widget:not([active]) {
-                display: none;
-            }
-
-            ape-weather {
-                padding: .8rem;
+            iron-pages {
+                display: flex;
+                flex-direction: column;
                 flex-grow: 1;
+                position: relative;
+            }
+
+            iron-pages > *[visible] {
+                animation: fadeIn .7s ease-in;
             }
 
         </style>
 
-        <ape-activity-wall users="[[allUsers]]" class="widget" active></ape-activity-wall>
-        <ape-birthday-wall users="[[birthdayUsers]]" class="widget"></ape-birthday-wall>
+        <iron-pages id="pages" attr-for-selected="selected" selected-attribute="visible" on-iron-select="_listenerIronSelect">
+            <ape-activity-wall id="activity" selected="activity" on-activity-state="_listenerActivityState"></ape-activity-wall>
+            <ape-birthday-wall id="birthday" selected="birthday" on-birthday-state="_listenerBirthdayState"></ape-birthday-wall>
+        </iron-pages>
 
     </template>
 
@@ -63,13 +65,9 @@
                     type: Object,
                     value: () => null
                 },
-                allUsers: {
+                _walls: {
                     type: Array,
-                    value: () => null
-                },
-                birthdayUsers: {
-                    type: Array,
-                    value: () => null
+                    value: () => [false, false]
                 },
             },
 
@@ -77,19 +75,18 @@
                 `_observerUserAndVisible(user, visible)`
             ],
 
-            /* Life cycle */
-
-            ready() {
-                this._interval = 3000;
-                this._activeIndex = 0;
-            },
-
             attached() {
-
+                this._startTransitions(0);
             },
 
-            detached() {
+            activate() {
+                this.$.activity.activate();
+                this.$.birthday.activate();
+            },
 
+            deactivate() {
+                this.$.activity.deactivate();
+                this.$.birthday.deactivate();
             },
 
             _observerUserAndVisible(user, visible) {
@@ -100,35 +97,25 @@
                 }
             },
 
-            activate() {
-                this.usersRef = firebase.database().ref(`/users`);
-                this.usersRef.on(`value`, (data) => {
-                    const items = data.val();
-                    if (!this.allUsers) {
-                        setTimeout(this._startTransitions.bind(this), this._interval);
-                    }
-                    this.allUsers = Object.keys(items).map(key => items[key]);
-                    // this.birthdayUsers = this.allUsers.filter((user) => user.hasBirthdayToday === true);
-                    this.birthdayUsers = this.allUsers.slice(0, 2);
-                });
+            _listenerIronSelect(event) {
+                event.stopPropagation();
             },
 
-            deactivate() {
-                this.allUsers = [];
+            _listenerActivityState(event) {
+                this._walls[0] = event.detail.active;
             },
 
-            _startTransitions() {
-                const widgets = Polymer.dom(this.root).querySelectorAll(`.widget`);
-                widgets[this._activeIndex].removeAttribute(`active`);
-                this._activeIndex += 1;
-                if (this._activeIndex === widgets.length) {
-                    this._activeIndex = 0;
-                }
-                widgets[this._activeIndex].setAttribute(`active`, ``);
-                setTimeout(this._startTransitions.bind(this), this._interval);
+            _listenerBirthdayState(event) {
+                this._walls[1] = event.detail.active;
             },
 
-
+            _startTransitions(index) {
+                const walls = this._walls.filter(active => active === true);
+                const currentIndex = (index < walls.length) ? index : 0;
+                const nextIndex = currentIndex + 1;
+                this.$.pages.selectIndex(currentIndex);
+                setTimeout(this._startTransitions.bind(this, nextIndex), 5000);
+            },
 
         });
 
