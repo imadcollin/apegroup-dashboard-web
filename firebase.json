@@ -6,20 +6,7 @@
         "public": "build",
         "cleanUrls": false,
         "trailingSlash": false,
-        "ignore": [
-            "**/.*",
-            "app.yml",
-            "bower.json",
-            "circle.yml",
-            "firebase.json",
-            "LICENSE.md",
-            "package.json",
-            "README.md",
-            "**/gulp/**",
-            "**/node_modules/**",
-            "**/server/**",
-            "**/src/**"
-        ],
+        "ignore": [],
         "rewrites": [
             {
                 "source": "**",
