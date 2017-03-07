@@ -175,8 +175,7 @@
             },
 
             deactivate() {
-                this._users = null;
-                this._birthdayUsers = null;
+                this._users = [];
                 if (this._usersRef) {
                     this._usersRef.off();
                 }

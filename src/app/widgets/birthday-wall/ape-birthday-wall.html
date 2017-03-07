@@ -112,6 +112,13 @@
                 });
             },
 
+            deactivate() {
+                this._users = [];
+                if (this._usersRef) {
+                    this._usersRef.off();
+                }
+            },
+
             _observerUsers(users) {
                 this.fire(`birthday-state`, {
                     active: users.length !== 0

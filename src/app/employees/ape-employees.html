@@ -57,6 +57,10 @@
             ],
 
             properties: {
+                _walls: {
+                    type: Array,
+                    value: () => [false, false]
+                },
                 visible: {
                     type: Boolean,
                     value: false
@@ -64,10 +68,6 @@
                 user: {
                     type: Object,
                     value: () => null
-                },
-                _walls: {
-                    type: Array,
-                    value: () => [false, false]
                 },
             },
 
@@ -79,21 +79,13 @@
                 this._startTransitions(0);
             },
 
-            activate() {
-                this.$.activity.activate();
-                this.$.birthday.activate();
-            },
-
-            deactivate() {
-                this.$.activity.deactivate();
-                this.$.birthday.deactivate();
-            },
-
             _observerUserAndVisible(user, visible) {
                 if (user && visible) {
-                    this.activate();
+                    this.$.activity.activate();
+                    this.$.birthday.activate();
                 } else if (!user) {
-                    this.deactivate();
+                    this.$.activity.deactivate();
+                    this.$.birthday.deactivate();
                 }
             },
 
