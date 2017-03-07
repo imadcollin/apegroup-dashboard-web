@@ -3,8 +3,10 @@
 <link rel="import" href="../assets/libs/app-route/app-route.html">
 <link rel="import" href="../assets/libs/app-route/app-location.html">
 <link rel="import" href="../assets/libs/iron-pages/iron-pages.html">
-
 <link rel="import" href="shared/firebase/firebase.html">
+<script>
+    firebase.initializeApp(CONFIG.FIREBASE);
+</script>
 
 <dom-module id="ape-app">
 
@@ -90,10 +92,6 @@
             ],
 
             /* Life cycle */
-
-            ready() {
-                firebase.initializeApp(CONFIG.FIREBASE);
-            },
 
             attached() {
                 firebase.auth().onAuthStateChanged((user) => {
