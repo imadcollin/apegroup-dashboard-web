@@ -1,0 +1,110 @@
+<link rel="import" href="../../../assets/libs/polymer/polymer.html">
+<link rel="import" href="../../../assets/libs/iron-image/iron-image.html">
+
+<dom-module id="ape-birthday-wall">
+
+    <template>
+
+        <style>
+
+            :host {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                flex-grow: 1;
+            }
+
+            h1 {
+                margin: 0;
+                margin-bottom: 4.8rem;
+                padding: 0;
+                font-size: 6.2rem;
+                font-weight: 900;
+                font-family: var(--font-family-black);
+                text-align: center;
+            }
+
+            .card-container {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .card {
+                display: block;
+                position: relative;
+                flex-grow: 0;
+                flex-shrink: 0;
+                flex-basis: 33.3333%;
+                width: 33.3333%;
+                padding: 0 .8rem;
+                margin-bottom: 1.6rem;
+            }
+
+            .profile-img {
+                width: 100%;
+                height: auto;
+                object-fit: cover;
+                margin-bottom: .8rem;
+                background-color: #b9b9b9;
+            }
+
+            .profile-img:after {
+                content: "";
+                display: block;
+                padding-bottom: 100%;
+            }
+
+            .name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: center;
+                font-size: 2.6rem;
+            }
+
+        </style>
+
+        <h1>Grattis på födelsedagen!</h1>
+
+        <div class="card-container">
+            <template is="dom-repeat" items="[[users]]" as="user" sort="_sortByFirstName">
+                <div class="card">
+                    <iron-image class="profile-img" sizing="cover" src="[[user.imageURL]]" alt="[[user.firstname]] [[user.lastname]]"></iron-image>
+                    <div class="name">[[user.firstname]] [[user.lastname]]</div>
+                </div>
+            </template>
+        </div>
+
+    </template>
+
+    <script>
+
+        Polymer({
+
+            is: `ape-birthday-wall`,
+
+            behaviors: [
+
+            ],
+
+            properties: {
+                users: {
+                    type: Array,
+                    value: () => []
+                },
+            },
+
+            _sortByFirstName(a, b) {
+                const userFirstNameA = a.firstname.toLowerCase();
+                const userFirstNameB = b.firstname.toLowerCase();
+                if (userFirstNameA === userFirstNameB) return 0;
+                return userFirstNameA < userFirstNameB ? -1 : 1;
+            },
+
+        });
+
+    </script>
+
+</dom-module>

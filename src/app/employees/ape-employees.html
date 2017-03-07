@@ -1,8 +1,6 @@
 <link rel="import" href="../../assets/libs/polymer/polymer.html">
 <link rel="import" href="../widgets/activity-wall/ape-activity-wall.html">
-<link rel="import" href="../widgets/wall/ape-wall.html">
-<link rel="import" href="../widgets/weather/ape-weather.html">
-<link rel="import" href="../shared/animation/ape-animation.html">
+<link rel="import" href="../widgets/birthday-wall/ape-birthday-wall.html">
 
 <dom-module id="ape-employees">
 
@@ -41,8 +39,8 @@
 
         </style>
 
-        <ape-activity-wall id="wall" class="widget" active></ape-activity-wall>
-        <ape-animation></ape-animation>
+        <ape-activity-wall users="[[allUsers]]" class="widget" active></ape-activity-wall>
+        <ape-birthday-wall users="[[birthdayUsers]]" class="widget"></ape-birthday-wall>
 
     </template>
 
@@ -64,7 +62,15 @@
                 user: {
                     type: Object,
                     value: () => null
-                }
+                },
+                allUsers: {
+                    type: Array,
+                    value: () => null
+                },
+                birthdayUsers: {
+                    type: Array,
+                    value: () => null
+                },
             },
 
             observers: [
@@ -74,13 +80,12 @@
             /* Life cycle */
 
             ready() {
-                this._interval = 10000;
+                this._interval = 3000;
+                this._activeIndex = 0;
             },
 
             attached() {
-                this._activeIndex = 0;
-                this._widgets = Polymer.dom(this.root).querySelectorAll(`.widget`);
-                // setTimeout(this._startTransition.bind(this), this._interval);
+
             },
 
             detached() {
@@ -89,21 +94,41 @@
 
             _observerUserAndVisible(user, visible) {
                 if (user && visible) {
-                    this.$.wall.activate();
+                    this.activate();
                 } else if (!user) {
-                    this.$.wall.deactivate();
+                    this.deactivate();
                 }
             },
 
-            _startTransition() {
-                this._widgets[this._activeIndex].removeAttribute(`active`);
+            activate() {
+                this.usersRef = firebase.database().ref(`/users`);
+                this.usersRef.on(`value`, (data) => {
+                    const items = data.val();
+                    if (!this.allUsers) {
+                        setTimeout(this._startTransitions.bind(this), this._interval);
+                    }
+                    this.allUsers = Object.keys(items).map(key => items[key]);
+                    // this.birthdayUsers = this.allUsers.filter((user) => user.hasBirthdayToday === true);
+                    this.birthdayUsers = this.allUsers.slice(0, 2);
+                });
+            },
+
+            deactivate() {
+                this.allUsers = [];
+            },
+
+            _startTransitions() {
+                const widgets = Polymer.dom(this.root).querySelectorAll(`.widget`);
+                widgets[this._activeIndex].removeAttribute(`active`);
                 this._activeIndex += 1;
-                if (this._activeIndex === this._widgets.length) {
+                if (this._activeIndex === widgets.length) {
                     this._activeIndex = 0;
                 }
-                this._widgets[this._activeIndex].setAttribute(`active`, ``);
-                setTimeout(this._startTransition.bind(this), this._interval);
-            }
+                widgets[this._activeIndex].setAttribute(`active`, ``);
+                setTimeout(this._startTransitions.bind(this), this._interval);
+            },
+
+
 
         });
 

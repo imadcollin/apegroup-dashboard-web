@@ -28,7 +28,7 @@
             .header h1 {
                 margin: 0;
                 padding: 0;
-                font-size: 7.2rem;
+                font-size: 6.2rem;
                 font-weight: 900;
                 font-family: var(--font-family-black);
             }
@@ -53,7 +53,7 @@
                 flex-shrink: 0;
                 flex-basis: 8.3333333%;
                 width: 8.3333333%;
-                padding: 0.8rem 0.8rem 0 0.8rem;
+                padding: 0 .8rem;
                 margin-bottom: 1.6rem;
             }
 
@@ -126,7 +126,7 @@
         </div>
 
         <div class="card-container">
-            <template is="dom-repeat" items="[[usersData]]" as="user" sort="_sortByFirstName">
+            <template is="dom-repeat" items="[[users]]" as="user" sort="_sortByFirstName">
                 <div class="card">
                     <div class="birthday" has-birth-day$="[[user.hasBirthdayToday]]"></div>
                     <iron-image class="profile-img" sizing="cover" src="[[user.imageURL]]" alt="[[user.firstname]] [[user.lastname]]"></iron-image>
@@ -152,7 +152,7 @@
             ],
 
             properties: {
-                usersData: {
+                users: {
                     type: Array,
                     value: () => []
                 },
@@ -161,18 +161,6 @@
                     value: () => null
 
                 }
-            },
-
-            activate() {
-                this.usersRef = firebase.database().ref(`/users`);
-                this.usersRef.on(`value`, (data) => {
-                    const items = data.val();
-                    this.usersData = Object.keys(items).map(key => items[key]);
-                });
-            },
-
-            deactivate() {
-                this.usersData = [];
             },
 
             _sortByFirstName(a, b) {
