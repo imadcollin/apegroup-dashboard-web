@@ -8,13 +8,17 @@
         "trailingSlash": false,
         "ignore": [
             "**/.*",
+            "app.yml",
+            "bower.json",
             "circle.yml",
             "firebase.json",
+            "LICENSE.md",
             "package.json",
             "README.md",
-            "**/.vscode/**",
             "**/gulp/**",
-            "**/node_modules/**"
+            "**/node_modules/**",
+            "**/server/**",
+            "**/src/**"
         ],
         "rewrites": [
             {
