@@ -1,6 +1,5 @@
 <link rel="import" href="../../assets/libs/polymer/polymer.html">
 <link rel="import" href="../widgets/activity-wall/ape-activity-wall.html">
-<link rel="import" href="../widgets/time/ape-time.html">
 <link rel="import" href="../widgets/wall/ape-wall.html">
 <link rel="import" href="../widgets/weather/ape-weather.html">
 <link rel="import" href="../shared/animation/ape-animation.html">
@@ -20,7 +19,7 @@
                 }
             }
 
-             :host {
+            :host {
                 padding: 4.8rem;
                 display: flex;
                 flex-direction: column;
@@ -35,40 +34,12 @@
                 display: none;
             }
 
-            .header {
-                padding: 0 .8rem;
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 4.8rem;
-                align-items: baseline;
-            }
-
-            .header h1 {
-                margin: 0;
-                padding: 0;
-                font-size: 7.2rem;
-                font-weight: 900;
-                font-family: var(--font-family-black);
-            }
-
-            ape-time {
-                font-size: 7.2rem;
-                padding: 0;
-                width: auto;
-                font-family: var(--font-family-light);
-            }
-
             ape-weather {
                 padding: .8rem;
                 flex-grow: 1;
             }
 
         </style>
-
-        <div class="header">
-            <h1>Apewall</h1>
-            <ape-time></ape-time>
-        </div>
 
         <ape-activity-wall id="wall" class="widget" active></ape-activity-wall>
         <ape-animation></ape-animation>
