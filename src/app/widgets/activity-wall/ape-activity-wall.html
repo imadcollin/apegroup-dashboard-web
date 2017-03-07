@@ -159,10 +159,6 @@
                 _usersRef: {
                     type: Object,
                     value: () => null
-                },
-                active: {
-                    type: Boolean,
-                    value: false
                 }
             },
 
@@ -183,7 +179,6 @@
             },
 
             _observerUsers(users) {
-                this.active = users.length !== 0;
                 this.fire(`activity-state`, {
                     active: users.length !== 0
                 });

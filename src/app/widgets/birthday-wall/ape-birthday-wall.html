@@ -97,10 +97,6 @@
                 _usersRef: {
                     type: Object,
                     value: () => null
-                },
-                active: {
-                    type: Boolean,
-                    value: false
                 }
             },
 
@@ -108,7 +104,6 @@
                 this._usersRef = firebase.database().ref(`/users`).orderByChild(`hasBirthdayToday`).equalTo(true).limitToFirst(2);
                 this._usersRef.on(`value`, (data) => {
                     const items = data.val();
-                    console.log(items);
                     if (items) {
                         this._users = Object.keys(items).map(key => items[key]);
                     } else {
@@ -118,7 +113,6 @@
             },
 
             _observerUsers(users) {
-                this.active = users.length !== 0;
                 this.fire(`birthday-state`, {
                     active: users.length !== 0
                 });
