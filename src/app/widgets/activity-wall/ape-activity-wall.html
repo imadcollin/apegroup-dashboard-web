@@ -97,7 +97,7 @@
         </style>
 
         <div class="card-container">
-            <template is="dom-repeat" items="[[usersData]]" as="user">
+            <template is="dom-repeat" items="[[usersData]]" as="user" sort="_sortByFirstName">
                 <div class="card">
                     <div class="birthday" has-birth-day$="[[user.hasBirthdayToday]]"></div>
                     <iron-image class="profile-img" sizing="cover" src="[[user.imageURL]]" alt="[[user.firstname]] [[user.lastname]]"></iron-image>
@@ -134,20 +134,6 @@
                 }
             },
 
-            /* Life cycle */
-
-            ready() {
-
-            },
-
-            attached() {
-
-            },
-
-            detached() {
-
-            },
-
             activate() {
                 this.usersRef = firebase.database().ref(`/users`);
                 this.usersRef.on(`value`, (data) => {
@@ -160,9 +146,11 @@
                 this.usersData = [];
             },
 
-            _sort(a, b) {
-                if (a.firstname === b.firstname) return 0;
-                return a.firstname < b.firstname ? -1 : 1;
+            _sortByFirstName(a, b) {
+                const userFirstNameA = a.firstname.toLowerCase();
+                const userFirstNameB = b.firstname.toLowerCase();
+                if (userFirstNameA === userFirstNameB) return 0;
+                return userFirstNameA < userFirstNameB ? -1 : 1;
             },
 
         });
