@@ -61,6 +61,9 @@
                     type: Array,
                     value: () => [false, false]
                 },
+                _ticker: {
+                    type: Number
+                },
                 visible: {
                     type: Boolean,
                     value: false
@@ -75,17 +78,15 @@
                 `_observerUserAndVisible(user, visible)`
             ],
 
-            attached() {
-                this._startTransitions(0);
-            },
-
             _observerUserAndVisible(user, visible) {
-                if (user && visible) {
+                if (visible) {
                     this.$.activity.activate();
                     this.$.birthday.activate();
-                } else if (!user) {
+                    this._startTicker(0);
+                } else {
                     this.$.activity.deactivate();
                     this.$.birthday.deactivate();
+                    this._stopTicker();
                 }
             },
 
@@ -101,12 +102,16 @@
                 this._walls[1] = event.detail.active;
             },
 
-            _startTransitions(index) {
+            _startTicker(index) {
                 const walls = this._walls.filter(active => active === true);
                 const currentIndex = (index < walls.length) ? index : 0;
                 const nextIndex = currentIndex + 1;
                 this.$.pages.selectIndex(currentIndex);
-                setTimeout(this._startTransitions.bind(this, nextIndex), 5000);
+                this._ticker = setTimeout(this._startTicker.bind(this, nextIndex), 5000);
+            },
+
+            _stopTicker() {
+                clearTimeout(this._ticker);
             },
 
         });
