@@ -166,7 +166,11 @@
                 this._usersRef = firebase.database().ref(`/users`);
                 this._usersRef.on(`value`, (data) => {
                     const items = data.val();
-                    this._users = Object.keys(items).map(key => items[key]);
+                    if (items) {
+                        this._users = Object.keys(items).map(key => items[key]);
+                    } else {
+                        this._users = [];
+                    }
                 });
             },
 
