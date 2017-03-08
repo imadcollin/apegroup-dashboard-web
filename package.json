@@ -10,8 +10,6 @@
   "scripts": {
     "firebase": "firebase",
     "gulp": "./node_modules/gulp-cli/bin/gulp.js --gulpfile=./gulp/gulp.js --require babel-register --cwd=./",
-    "myName": "echo $npm_package_name",
-    "myVersion": "echo $npm_package_version | sed 's/[\",.,-]//g'",
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
     "start": "firebase serve --port=3000",
