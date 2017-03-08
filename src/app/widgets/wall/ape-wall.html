@@ -8,8 +8,14 @@
 
         <style>
 
-           :host {
+            :host {
                 position: relative;
+                display: block;
+                height: 100%;
+                width: 100%;
+            }
+
+            .cards-container {
                 display: grid;
                 height: 100%;
                 width: 100%;
@@ -115,22 +121,24 @@
 
         </style>
 
-        <template is="dom-repeat" items="[[_usersData]]" as="user">
-            <div class="card" out-of-office$="[[!user.isInOffice]]">
-                <div class="birthday" has-birth-day$="[[user.hasBirthdayToday]]"></div>
-                <iron-image class="profile-img" sizing="cover" src="[[user.imageURL]]" alt="[[user.firstname]] [[user.lastname]]"></iron-image>
-                <div class="text-container">
-                    <div class="status" hidden$="[[!user.isInMeeting]]"></div>
-                    <div class="name">[[user.firstname]] [[user.lastname]]</div>
+        <div class="cards-container">
+            <template is="dom-repeat" items="[[_usersData]]" as="user">
+                <div class="card" out-of-office$="[[!user.isInOffice]]">
+                    <div class="birthday" has-birth-day$="[[user.hasBirthdayToday]]"></div>
+                    <iron-image class="profile-img" sizing="cover" src="[[user.imageURL]]" alt="[[user.firstname]] [[user.lastname]]"></iron-image>
+                    <div class="text-container">
+                        <div class="status" hidden$="[[!user.isInMeeting]]"></div>
+                        <div class="name">[[user.firstname]] [[user.lastname]]</div>
+                    </div>
+                    <div class="overlay" out-of-office$="[[!user.isInOffice]]"></div>
                 </div>
-                <div class="overlay" out-of-office$="[[!user.isInOffice]]"></div>
-            </div>
-        </template>
+            </template>
+        </div>
 
-        <!--<div class="loader-container">
+        <div class="loader-container">
             <div class="loader"></div>
             <div>Laddar väggen...</div>
-        </div>-->
+        </div>
 
     </template>
 
@@ -173,7 +181,7 @@
                     const items = data.val();
                     if (items) {
                         this._usersData = Object.keys(items).map(key => items[key]);
-                        // this._removeLoader();
+                        this._removeLoader();
                     }
                 });
             },
@@ -201,15 +209,15 @@
                 }
             },
 
-            // /**
-            //  * Removes loader from the widget if it still is in the DOM.
-            //  */
-            // _removeLoader() {
-            //     const loader = this.querySelector(`.loader-container`);
-            //     if (loader) {
-            //         requestAnimationFrame(() => this.removeChild(loader));
-            //     }
-            // },
+            /**
+             * Removes loader from the widget if it still is in the DOM.
+             */
+            _removeLoader() {
+                const loader = this.querySelector(`.loader-container`);
+                if (loader) {
+                    requestAnimationFrame(() => this.removeChild(loader));
+                }
+            },
 
         });
 
