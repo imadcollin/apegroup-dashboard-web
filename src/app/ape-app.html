@@ -52,12 +52,12 @@
 
         </style>
 
-        <app-location route="{{route}}"></app-location>
-        <app-route route="[[route]]" pattern="/:page" data="{{router}}"></app-route>
+        <app-location route="{{_route}}"></app-location>
+        <app-route route="[[_route]]" pattern="/:page" data="{{_router}}" tail="{{_subroute}}"></app-route>
 
-        <iron-pages selected="[[page]]" attr-for-selected="selected" selected-attribute="visible" fallback-selection="404" on-iron-select="_listenerIronSelect">
+        <iron-pages selected="[[_page]]" attr-for-selected="selected" selected-attribute="visible" fallback-selection="404" on-iron-select="_listenerIronSelect">
             <ape-home selected="home"></ape-home>
-            <ape-board selected="board"></ape-board>
+            <ape-board selected="board" route="[[_subroute]]"></ape-board>
             <ape-wall selected="wall"></ape-wall>
             <ape-login selected="login" on-login-success="_listenerLoginSuccess"></ape-login>
             <ape-style selected="style"></ape-style>
@@ -76,28 +76,34 @@
             ],
 
             properties: {
-                router: {
+                _route: {
                     type: Object
                 },
-                page: {
+                _router: {
+                    type: Object
+                },
+                _subroute: {
+                    type: Object
+                },
+                _page: {
                     type: String
                 },
-                user: {
+                _user: {
                     type: Object
                 }
             },
 
             observers: [
-                `_observerRouterPage(router.page)`
+                `_observerRouterPage(_router.page)`
             ],
 
             /* Life cycle */
 
             attached() {
                 firebase.auth().onAuthStateChanged((user) => {
-                    this.user = user;
-                    if (!this.user) {
-                        this.page = `login`;
+                    this._user = user;
+                    if (!this._user) {
+                        this._page = `login`;
                     }
                 });
             },
@@ -107,17 +113,17 @@
             },
 
             _observerRouterPage(page) {
-                this.page = (page === ``) ? `home` : page;
+                this._page = (page === ``) ? `home` : page;
             },
 
             _listenerIronSelect(event) {
                 const name = event.target.selected;
-                const importHref = `${this.page}/ape-${name}.html`;
+                const importHref = `${this._page}/ape-${name}.html`;
                 this.importHref(this.resolveUrl(importHref), null, null, true);
             },
 
             _listenerLoginSuccess() {
-                this.page = (this.router.page === ``) ? `home` : this.router.page;
+                this._page = (this.router.page === ``) ? `home` : this.router.page;
             },
 
         });
