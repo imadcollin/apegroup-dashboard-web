@@ -137,7 +137,6 @@
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="4">Layout4</div>
         </div>
 
-
         <div class="container-wrapper">
             <ape-container></ape-container>
             <ape-container></ape-container>
@@ -239,7 +238,11 @@
 
             _activateLayout(layout) {
                 if (this._containers) {
-                    this[`_activateLayout${layout}`]();
+                    if (layout === `one`) {
+                        this._activateLayout1();
+                    } else if (layout === `two`) {
+                        this._activateLayout2();
+                    }
                 }
             },
 
