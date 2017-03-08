@@ -69,7 +69,7 @@
             ape-container:nth-child(35) { grid-area: thirtyfive; }
             ape-container:nth-child(36) { grid-area: thirtysix; }
 
-            /* Layout 1 */
+            /* Layouts */
 
             :host([layout="1"]) .container-wrapper {
                 grid-template-areas: "one one two two three three"
@@ -80,12 +80,6 @@
                                      "seven seven eight eight nine nine"
             }
 
-            :host([layout="1"]) ape-container:nth-child(n+10) {
-                display: none;
-            }
-
-            /* Layout 2 */
-
             :host([layout="2"]) .container-wrapper {
                 grid-template-areas: "one one one one one one"
                                      "one one one one one one"
@@ -93,10 +87,6 @@
                                      "one one one one one one"
                                      "two two three three four four"
                                      "two two three three four four"
-            }
-
-            :host([layout="2"]) ape-container:nth-child(n+5) {
-                display: none;
             }
 
             .menu {
@@ -189,13 +179,12 @@
 
             is: `ape-board`,
 
-            behaviors: [
-
-            ],
-
             properties: {
                 _router: {
                     type: Object
+                },
+                _name: {
+                    type: String
                 },
                 route: {
                     type: Object
@@ -214,35 +203,54 @@
                 `_observerRouterName(_router.name, visible)`
             ],
 
-            _observerRouterName(name, visible) {
-                if (name && visible) {
-                    this._boardRef = firebase.database().ref(`/boards/${name}`);
-                    this._boardRef.on(`value`, (data) => {
-                        const value = data.val();
-                        this.layout = value.layout;
-                    });
-                }
-            },
+            /* Life cycle */
 
             attached() {
                 this._containers = Polymer.dom(this.root).querySelectorAll(`ape-container`);
                 this._activateLayout(this.layout);
             },
 
+            /* Observers */
+
             _observerLayout(layout) {
                 this._activateLayout(layout);
             },
 
+            _observerRouterName(name, visible) {
+                if (name && visible) {
+                    this._name = name;
+                    this._activate();
+                } else if (!visible) {
+                    this._deactivate();
+                }
+            },
+
+            /* Listeners */
+
             _listenerDragStart(event) {
                 const dataset = event.target.dataset;
                 const name = dataset.name;
-                // const minWidth = dataset.minWidth;
-                // const minHeight = dataset.minHeight;
                 event.dataTransfer.setData(`widget-name`, name);
             },
 
             _listenerTapChangeLayout(event) {
                 this.layout = event.target.dataset.layout;
+            },
+
+            /* Private functions */
+
+            _activate() {
+                this._boardRef = firebase.database().ref(`/boards/${this._name}`);
+                this._boardRef.on(`value`, (data) => {
+                    const value = data.val();
+                    this.layout = value.layout;
+                });
+            },
+
+            deactivate() {
+                if (this._boardRef) {
+                    this._boardRef.off();
+                }
             },
 
             _activateContainer(index, width, height) {
@@ -259,9 +267,9 @@
 
             _activateLayout(layout) {
                 if (this._containers) {
-                    if (layout === `1`) {
+                    if (layout == 1) {
                         this._activateLayout1();
-                    } else if (layout === `2`) {
+                    } else if (layout == 2) {
                         this._activateLayout2();
                     }
                 }
@@ -288,10 +296,6 @@
                 this._activateContainer(1, 2, 2);
                 this._activateContainer(2, 2, 2);
                 this._activateContainer(3, 2, 2);
-            },
-
-            change() {
-                this.layout = `2`;
             }
 
         });
