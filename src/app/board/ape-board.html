@@ -133,8 +133,6 @@
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="0">Layout</div>
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="1">Layout1</div>
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="2">Layout2</div>
-            <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="3">Layout3</div>
-            <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="4">Layout4</div>
         </div>
 
         <div class="container-wrapper">
@@ -223,24 +221,22 @@
             },
 
             _activateContainer(index, width, height) {
-                this._containers[index].setAttribute(`active`, ``);
-                this._containers[index].setAttribute(`width`, width);
-                this._containers[index].setAttribute(`height`, height);
+                this._containers[index].active = true;
+                this._containers[index].size = {width: width, height: height};
             },
 
             _deactivateContainers(index) {
                 for (let i = index; i < this._containers.length; i++) {
-                    this._containers[i].removeAttribute(`active`);
-                    this._containers[i].removeAttribute(`width`);
-                    this._containers[i].removeAttribute(`height`);
+                    this._containers[i].active = false;
+                    this._containers[i].size = {width: 0, height: 0};
                 }
             },
 
             _activateLayout(layout) {
                 if (this._containers) {
-                    if (layout === `one`) {
+                    if (layout === `1`) {
                         this._activateLayout1();
-                    } else if (layout === `two`) {
+                    } else if (layout === `2`) {
                         this._activateLayout2();
                     }
                 }

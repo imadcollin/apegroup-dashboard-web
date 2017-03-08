@@ -37,7 +37,7 @@
         </style>
 
         <div id="placeholder">
-            [[placeholderMessage]]
+            [[_message]]
         </div>
 
     </template>
@@ -57,10 +57,20 @@
                     type: Object,
                     value: () => {}
                 },
-                placeholderMessage: {
+                size: {
+                    type: String,
+                    observer: `_observerSize`,
+                    // reflectToAttribute: true
+                },
+                active: {
+                    type: Boolean,
+                    observer: `_observerActive`,
+                    // reflectToAttribute: true
+                },
+                _message: {
                     type: String,
                     value: `Släpp din widget här`
-                }
+                },
             },
 
             attached() {
@@ -99,11 +109,27 @@
                 event.preventDefault();
                 const widgetName = event.dataTransfer.getData(`widget-name`);
                 this.widget = document.createElement(widgetName);
+                this.widget.active = this.active;
+                this.widget.size = this.size;
                 requestAnimationFrame(() => {
                     this.removeChild(this.$.placeholder);
                     this.appendChild(this.widget);
                 });
             },
+
+            /* Observers */
+
+            _observerActive(active) {
+                if (this.widget) {
+                    this.widget.active = active;
+                }
+            },
+
+            _observerSize(size) {
+                if (this.widget) {
+                    this.widget.size = size;
+                }
+            }
 
         });
 
