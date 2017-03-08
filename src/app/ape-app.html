@@ -110,7 +110,7 @@
                 this.page = (page === ``) ? `home` : page;
             },
 
-            _listenerIronSelect() {
+            _listenerIronSelect(event) {
                 const name = event.target.selected;
                 const importHref = `${this.page}/ape-${name}.html`;
                 this.importHref(this.resolveUrl(importHref), null, null, true);
