@@ -89,6 +89,15 @@
                                      "two two three three four four"
             }
 
+            :host([layout="3"]) .container-wrapper {
+                grid-template-areas: "one one one one one one"
+                                     "one one one one one one"
+                                     "one one one one one one"
+                                     "one one one one one one"
+                                     "one one one one one one"
+                                     "one one one one one one"
+            }
+
             .menu {
                 position: fixed;
                 right: 0;
@@ -125,6 +134,7 @@
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="0">Layout</div>
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="1">Layout1</div>
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="2">Layout2</div>
+            <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="3">Layout3</div>
         </div>
 
         <div class="container-wrapper">
@@ -271,6 +281,8 @@
                         this._activateLayout1();
                     } else if (layout == 2) {
                         this._activateLayout2();
+                    } else if (layout == 3) {
+                        this._activateLayout3();
                     }
                 }
             },
@@ -296,6 +308,12 @@
                 this._activateContainer(1, 2, 2);
                 this._activateContainer(2, 2, 2);
                 this._activateContainer(3, 2, 2);
+            },
+
+            _activateLayout3() {
+                console.log(`_activateLayout3`);
+                this._deactivateContainers(1);
+                this._activateContainer(0, 6, 6);
             }
 
         });
