@@ -123,6 +123,8 @@
 
         </style>
 
+        <app-route route="[[route]]" pattern="/:name" data="{{_router}}"></app-route>
+
         <div class="menu">
             <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-min-width="1" data-min-height="1" data-name="ape-weather">Weather</div>
             <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-min-width="1" data-min-height="1" data-name="ape-time">Time</div>
@@ -192,10 +194,33 @@
             ],
 
             properties: {
+                _router: {
+                    type: Object
+                },
+                route: {
+                    type: Object
+                },
+                visible: {
+                    type: Boolean
+                },
                 layout: {
                     type: String,
                     reflectToAttribute: true,
                     observer: `_observerLayout`
+                }
+            },
+
+            observers: [
+                `_observerRouterName(_router.name, visible)`
+            ],
+
+            _observerRouterName(name, visible) {
+                if (name && visible) {
+                    this._boardRef = firebase.database().ref(`/boards/${name}`);
+                    this._boardRef.on(`value`, (data) => {
+                        const value = data.val();
+                        this.layout = value.layout;
+                    });
                 }
             },
 
