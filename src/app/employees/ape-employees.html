@@ -66,19 +66,12 @@
                 },
                 visible: {
                     type: Boolean,
-                    value: false
-                },
-                user: {
-                    type: Object,
-                    value: () => null
-                },
+                    value: false,
+                    observer: `_observerVisible`
+                }
             },
 
-            observers: [
-                `_observerUserAndVisible(user, visible)`
-            ],
-
-            _observerUserAndVisible(user, visible) {
+            _observerVisible(visible) {
                 if (visible) {
                     this.$.activity.activate();
                     this.$.birthday.activate();
@@ -107,7 +100,7 @@
                 const currentIndex = (index < walls.length) ? index : 0;
                 const nextIndex = currentIndex + 1;
                 this.$.pages.selectIndex(currentIndex);
-                this._ticker = setTimeout(this._startTicker.bind(this, nextIndex), 5000);
+                this._ticker = setTimeout(this._startTicker.bind(this, nextIndex), 1000);
             },
 
             _stopTicker() {
