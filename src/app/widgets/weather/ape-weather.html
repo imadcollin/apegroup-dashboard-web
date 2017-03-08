@@ -74,9 +74,9 @@
 
         </style>
 
-        <div class="temperature-current">[[_formatNumber(weatherData.temp.current, 0)]]°</div>
-        <ape-icon name="[[weatherData.icon]]"></ape-icon>
-        <div class="location">[[weatherData.locationName]]</div>
+        <div class="temperature-current">[[_formatNumber(_weatherData.temp.current, 0)]]°</div>
+        <ape-icon name="[[_weatherData.icon]]"></ape-icon>
+        <div class="location">[[_weatherData.locationName]]</div>
         <!--<div class="wind">[[_formatNumber(weatherData.wind.speed, 0)]]m/s</div>-->
         <!--<div class="description">[[weatherData.description]]</div>-->
 
@@ -94,30 +94,54 @@
             is: `ape-weather`,
 
             properties: {
-                weatherData: {
+                size: {
+                    type: String,
+                    observer: `_observerSize`,
+                    // reflectToAttribute: true
+                },
+                active: {
+                    type: Boolean,
+                    observer: `_observerActive`,
+                    // reflectToAttribute: true
+                },
+                _weatherData: {
                     type: Object,
                     value: () => null
                 },
-                weatherRef: {
+                _weatherRef: {
                     type: Object,
                     value: () => null
                 },
             },
 
-            attached() {
-                // setup weather reference to weather node
-                this.weatherRef = firebase.database().ref(`/weather`);
-                this.weatherRef.on(`value`, (data) => {
-                    this.weatherData = data.val();
+            /* Life cycle */
+
+            activate() {
+                this._weatherRef = firebase.database().ref(`/weather`);
+                this._weatherRef.on(`value`, (data) => {
+                    this._weatherData = data.val();
                     this._removeLoader();
                 });
             },
 
-            detached() {
-                // remove weather reference from weather node
-                if (this.weatherRef) {
-                    this.weatherRef.off();
+            deactivate() {
+                if (this._weatherRef) {
+                    this._weatherRef.off();
                 }
+            },
+
+            /* Observers */
+
+            _observerActive(active) {
+                if (active) {
+                    this.activate();
+                } else {
+                    this.deactivate();
+                }
+            },
+
+            _observerSize(size) {
+                //console.log(`${this.is} - size ${size.width} ${size.width}`);
             },
 
             /**
