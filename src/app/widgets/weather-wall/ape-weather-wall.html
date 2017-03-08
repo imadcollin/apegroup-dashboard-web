@@ -1,4 +1,5 @@
 <link rel="import" href="../../../assets/libs/polymer/polymer.html">
+<link rel="import" href="../../../assets/libs/marked-element/marked-element.html">
 <link rel="import" href="../../shared/firebase/firebase.html">
 <link rel="import" href="../../shared/icon/ape-icon.html">
 
@@ -71,7 +72,9 @@
                 <div class="temperature-current">[[_formatNumber(_weather.temp.current, 0)]]°</div>
                 <ape-icon name="[[_weather.icon]]"></ape-icon>
             </div>
-            <div class="description">[[_weather.description]]</div>
+            <marked-element markdown="[[_weather.description]]">
+                <div class="markdown-html description"></div>
+            </marked-element>
         </div>
 
     </template>
