@@ -15,18 +15,13 @@
                 padding: 1.6rem;
                 justify-content: center;
                 align-items: center;
-                /*background-color: #fff;*/
                 font-size: 7rem;
                 font-weight: 700;
             }
 
-            .time {
-
-            }
-
         </style>
 
-        <div class="time">[[time]]</div>
+        <div>[[_time]]</div>
 
     </template>
 
@@ -37,54 +32,49 @@
             is: `ape-time`,
 
             properties: {
-                time: {
+                size: {
                     type: String,
+                    observer: `_observerSize`,
+                    // reflectToAttribute: true
+                },
+                _time: {
+                    type: String,
+                },
+                _timeoutId: {
+                    type: Number
                 }
             },
 
-            /**
-             * Attached
-             */
-            attached() {
-                this._startClock();
-            },
+            /* Life cycle */
 
-            /**
-             * Detached
-             */
-            detached() {
-                this._stopClock();
-            },
-
-            /**
-             * Start the clock
-             */
-            _startClock() {
-                // get the current date.
+            activate() {
                 const today = new Date();
                 const hour = today.getHours();
                 const minutes = today.getMinutes();
-                const seconds = today.getSeconds();
-
-                // format the date if necessary
-                // TODO: can we use localized behaviour to format date instead?
                 const hourFormatted = this._addZeroIfSingleDigit(hour);
                 const minutesFormatted = this._addZeroIfSingleDigit(minutes);
-                // const secondsFormatted = this._addZeroIfSingleDigit(seconds);
-
-                // set the formatted time
-                // this.time =  `${hourFormatted}:${minutesFormatted}:${secondsFormatted}`;
-                this.time =  `${hourFormatted}:${minutesFormatted}`;
-
-                // recursively call the function again
-                this._timeoutId = setTimeout(this._startClock.bind(this), 1000);
+                this._time =  `${hourFormatted}:${minutesFormatted}`;
+                this._timeoutId = setTimeout(this.activate.bind(this), 1000);
             },
 
-            /**
-             * Stop the clock
-             */
-            _stopClock() {
+            deactivate() {
                 clearTimeout(this._timeoutId);
+            },
+
+            /* Observers */
+
+            _observerSize(size) {
+                if (size.width < 1 || size.height < 1) {
+                    this.deactivate();
+                    this.fire(`widget-message`, {
+                        message: `Denna widget kräver en yta på minst 6x6`
+                    });
+                } else {
+                    this.activate();
+                    this.fire(`widget-message`, {
+                        message: null
+                    });
+                }
             },
 
             /**

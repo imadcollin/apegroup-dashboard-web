@@ -158,11 +158,6 @@
                     observer: `_observerSize`,
                     // reflectToAttribute: true
                 },
-                active: {
-                    type: Boolean,
-                    observer: `_observerActive`,
-                    // reflectToAttribute: true
-                },
                 _usersData: {
                     type: Object,
                     value: () => null
@@ -194,18 +189,17 @@
 
             /* Observers */
 
-            _observerActive(active) {
-                if (active) {
-                    this.activate();
-                } else {
-                    this.deactivate();
-                }
-            },
-
             _observerSize(size) {
-                console.log(`${this.is} - size ${size.width} ${size.width}`);
                 if (size.width < 6 || size.height < 6) {
-                    console.error(`To small container!`);
+                    this.deactivate();
+                    this.fire(`widget-message`, {
+                        message: `Denna widget kräver en yta på minst 6x6`
+                    });
+                } else {
+                    this.activate();
+                    this.fire(`widget-message`, {
+                        message: null
+                    });
                 }
             },
 
