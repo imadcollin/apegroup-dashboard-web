@@ -133,7 +133,11 @@
                 transition: transform .6s cubic-bezier(0.07, 0.91, 0.35, 0.91);
             }
 
-            .menu[active] {
+            :host(:not([active])) {
+                cursor: none;
+            }
+
+            :host([active]) .menu {
                 transform: translate3d(0, 0, 0);
             }
 
@@ -141,7 +145,7 @@
 
         <app-route route="[[route]]" pattern="/:name" data="{{_router}}"></app-route>
 
-        <div class="menu" active$="[[_active]]">
+        <div class="menu">
             <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-name="ape-weather">Väder</div>
             <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-name="ape-time">Klocka</div>
             <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-name="ape-wall">Vägg</div>
@@ -210,9 +214,10 @@
                 _name: {
                     type: String
                 },
-                _active: {
+                active: {
                     type: Boolean,
-                    value: false
+                    value: false,
+                    reflectToAttribute: true
                 },
                 route: {
                     type: Object
@@ -257,9 +262,9 @@
             /* Listeners */
 
             _listenerMousemove() {
-                this._active = true;
+                this.active = true;
                 this.debounce(`debounce-inactive`, function() {
-                    this._active = false;
+                    this.active = false;
                 }, 3000);
             },
 
