@@ -12,14 +12,19 @@
         <style>
 
             :host {
-                display: flex;
-                flex-direction: column;
+                position: relative;
+                display: block;
                 background-color: #eaeaea;
                 box-shadow: inset 0px 0px 1px 0px #8e8e8e;
                 overflow: hidden;
             }
 
             #message {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
@@ -27,7 +32,14 @@
                 align-items: center;
             }
 
-            /* States */
+            #container {
+                background-color: #fff;
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+            }
 
             :host(:not([active])) {
                 display: none;
@@ -40,8 +52,8 @@
 
         </style>
 
-        <div id="message">
-            [[_message]]
+        <div id="message">[[_message]]</div>
+        <div id="container" hidden$="[[_message]]">
         </div>
 
     </template>
@@ -68,7 +80,6 @@
                 },
                 active: {
                     type: Boolean,
-                    observer: `_observerActive`,
                     reflectToAttribute: true
                 },
                 _message: {
@@ -82,6 +93,7 @@
                 this.listen(this, `dragover`, `_listenerDragOver`);
                 this.listen(this, `dragleave`, `_listenerDragLeave`);
                 this.listen(this, `drop`, `_listenerDrop`);
+                this.listen(this, `widget-message`, `_listenerWidgetMessage`);
             },
 
             detached() {
@@ -89,6 +101,7 @@
                 this.unlisten(this, `dragover`, `_listenerDragOver`);
                 this.unlisten(this, `dragleave`, `_listenerDragLeave`);
                 this.unlisten(this, `drop`, `_listenerDrop`);
+                this.unlisten(this, `widget-message`, `_listenerWidgetMessage`);
             },
 
             /* Listeners */
@@ -111,23 +124,20 @@
 
             _listenerDrop(event) {
                 event.preventDefault();
-                const widgetName = event.dataTransfer.getData(`widget-name`);
-                this.widget = document.createElement(widgetName);
-                this.widget.active = this.active;
-                this.widget.size = this.size;
+                this.state = ``;
+                const name = event.dataTransfer.getData(`widget-name`);
+                this.widget = document.createElement(name);
                 requestAnimationFrame(() => {
-                    this.removeChild(this.$.message);
-                    this.appendChild(this.widget);
+                    this.$.container.appendChild(this.widget);
+                    this.widget.size = this.size;
                 });
             },
 
-            /* Observers */
-
-            _observerActive(active) {
-                if (this.widget) {
-                    this.widget.active = active;
-                }
+            _listenerWidgetMessage(event) {
+                this._message = event.detail.message;
             },
+
+            /* Observers */
 
             _observerSize(size) {
                 if (this.widget) {
