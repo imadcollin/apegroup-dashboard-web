@@ -1,6 +1,7 @@
 <link rel="import" href="../../../assets/libs/polymer/polymer.html">
 <link rel="import" href="../../shared/firebase/firebase.html">
 <link rel="import" href="../../shared/icon/ape-icon.html">
+<link rel="import" href="../../shared/loader/ape-loader.html">
 
 <dom-module id="ape-weather">
 
@@ -38,52 +39,13 @@
                 font-weight: 700;
             }
 
-            .loader-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: #fff;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .loader {
-                display: block;
-                width: 4rem;
-                height: 4rem;
-                background-color: var(--primary-color);
-                animation: animation-spinner 1.2s infinite ease-in-out;
-                margin-bottom: 1.6rem;
-            }
-
-            @keyframes animation-spinner {
-                0% {
-                    transform: perspective(12rem) rotateX(0deg) rotateY(0deg);
-                }
-                50% {
-                    transform: perspective(12rem) rotateX(-180.1deg) rotateY(0deg);
-                }
-                100% {
-                    transform: perspective(12rem) rotateX(-180deg) rotateY(-179.9deg);
-                }
-            }
-
         </style>
 
         <div class="temperature-current">[[_formatNumber(_weatherData.temp.current, 0)]]°</div>
         <ape-icon name="[[_weatherData.icon]]"></ape-icon>
         <div class="location">[[_weatherData.locationName]]</div>
-        <!--<div class="wind">[[_formatNumber(weatherData.wind.speed, 0)]]m/s</div>-->
-        <!--<div class="description">[[weatherData.description]]</div>-->
 
-        <div class="loader-container">
-            <div class="loader"></div>
-            <div>Laddar väder...</div>
-        </div>
+        <ape-loader loading="[[_loading]]">Laddar väder...</ape-loader>
 
     </template>
 
@@ -99,6 +61,10 @@
                     observer: `_observerSize`,
                     // reflectToAttribute: true
                 },
+                _loading: {
+                    type: Boolean,
+                    value: false,
+                },
                 _weatherData: {
                     type: Object,
                     value: () => null
@@ -112,10 +78,11 @@
             /* Life cycle */
 
             activate() {
+                this._loading = true;
                 this._weatherRef = firebase.database().ref(`/weather`);
                 this._weatherRef.on(`value`, (data) => {
+                    this._loading = false;
                     this._weatherData = data.val();
-                    this._removeLoader();
                 });
             },
 
@@ -138,16 +105,6 @@
                     this.fire(`widget-message`, {
                         message: null
                     });
-                }
-            },
-
-            /**
-             * Removes loader from the widget if it still is in the DOM.
-             */
-            _removeLoader() {
-                const loader = this.querySelector(`.loader-container`);
-                if (loader) {
-                    requestAnimationFrame(() => this.removeChild(loader));
                 }
             },
 

@@ -85,40 +85,6 @@
                 background-color: rgba(255, 255, 255, 0.5);
             }
 
-            .loader-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: #fff;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .loader {
-                display: block;
-                width: 6rem;
-                height: 6rem;
-                background-color: var(--primary-color);
-                animation: animation-spinner 1.2s infinite ease-in-out;
-                margin-bottom: 1.6rem;
-            }
-
-            @keyframes animation-spinner {
-                0% {
-                    transform: perspective(12rem) rotateX(0deg) rotateY(0deg);
-                }
-                50% {
-                    transform: perspective(12rem) rotateX(-180.1deg) rotateY(0deg);
-                }
-                100% {
-                    transform: perspective(12rem) rotateX(-180deg) rotateY(-179.9deg);
-                }
-            }
-
         </style>
 
         <div class="cards-container">
@@ -135,10 +101,7 @@
             </template>
         </div>
 
-        <div class="loader-container">
-            <div class="loader"></div>
-            <div>Laddar väggen...</div>
-        </div>
+        <ape-loader loading="[[_loading]]">Laddar väggen...</ape-loader>
 
     </template>
 
@@ -171,12 +134,13 @@
             /* Life cycle */
 
             activate() {
+                this._loading = true;
                 this._usersRef = firebase.database().ref(`/users`);
                 this._usersRef.on(`value`, (data) => {
                     const items = data.val();
+                    this._loading = false;
                     if (items) {
                         this._usersData = Object.keys(items).map(key => items[key]);
-                        this._removeLoader();
                     }
                 });
             },
@@ -200,16 +164,6 @@
                     this.fire(`widget-message`, {
                         message: null
                     });
-                }
-            },
-
-            /**
-             * Removes loader from the widget if it still is in the DOM.
-             */
-            _removeLoader() {
-                const loader = this.querySelector(`.loader-container`);
-                if (loader) {
-                    requestAnimationFrame(() => this.removeChild(loader));
                 }
             },
 
