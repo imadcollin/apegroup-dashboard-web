@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Webcomponent test</title>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="ape-loader.html">
+</head>
+<body>
+
+    <test-fixture id="basic">
+        <template>
+            <ape-loader></ape-loader>
+        </template>
+    </test-fixture>
+
+    <script>
+
+        suite(`<ape-loader>`, () => {
+
+            let element;
+            setup(() => {
+                element = fixture(`basic`);
+            });
+
+            test(`has correct component name`, () => {
+                expect(element.is).to.be.equal(`ape-loader`);
+            });
+
+            test(`has correct initial properties`, () => {
+                expect(element.loading).to.be.equal(false);
+            });
+
+            test(`has display property 'flex' when loading`, () => {
+                element.loading = true;
+                const style = window.getComputedStyle(element);
+                expect(style.display).to.be.equal(`flex`);
+            });
+
+            test(`has display property 'none' when NOT loading`, () => {
+                element.loading = false;
+                const style = window.getComputedStyle(element);
+                expect(style.display).to.be.equal(`none`);
+            });
+
+            test(`reflects loading 'false' to attribute`, () => {
+                element.loading = false;
+                expect(element.hasAttribute(`loading`)).to.be.equal(false);
+            });
+
+            test(`reflects loading 'true' to attribute`, () => {
+                element.loading = true;
+                expect(element.hasAttribute(`loading`)).to.be.equal(true);
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>
