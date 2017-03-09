@@ -1,5 +1,6 @@
 <link rel="import" href="../../assets/libs/polymer/polymer.html">
 <link rel="import" href="../shared/icon/ape-icon.html">
+<link rel="import" href="../shared/loader/ape-loader.html">
 
 <dom-module id="ape-style">
 
@@ -25,6 +26,7 @@
             .icon-container {
                 display: flex;
                 flex-wrap: wrap;
+                margin-bottom: 3.2rem;
             }
 
             .icon-item {
@@ -40,6 +42,13 @@
                 margin: 1.6rem;
                 margin-bottom: .8rem;
                 fill: #ff4141;
+            }
+
+            .loader-container {
+                position: relative;
+                width: 10rem;
+                height: 10rem;
+                margin-bottom: 3.2rem;
             }
 
         </style>
@@ -98,6 +107,11 @@
                 <ape-icon name="11n"></ape-icon>
                 <div>11n</div>
             </div>
+        </div>
+
+        <h2>Loader</h2>
+        <div class="loader-container">
+            <ape-loader loading>Laddar...</ape-loader>
         </div>
 
     </template>
