@@ -102,32 +102,49 @@
                 position: fixed;
                 right: 0;
                 top: 0;
-                height: 100%;
-                width: 8.8rem;
+                width: 100%;
                 background-color: #000;
                 z-index: 1;
+                transform: translate3d(0, -100%, 0);
                 color: #fff;
                 display: flex;
-                flex-direction: column;
             }
 
             .menu-icon {
                 display: flex;
                 flex-direction: column;
+                justify-content: center;
                 align-items: center;
                 padding: 1.6rem;
                 cursor: pointer;
                 background-color: #000;
             }
 
+            .menu {
+                position: fixed;
+                right: 0;
+                top: 0;
+                width: 100%;
+                background-color: #000;
+                z-index: 1;
+                transform: translate3d(0, -100%, 0);
+                color: #fff;
+                display: flex;
+                transition: transform .6s cubic-bezier(0.07, 0.91, 0.35, 0.91);
+            }
+
+            .menu[active] {
+                transform: translate3d(0, 0, 0);
+            }
+
         </style>
 
         <app-route route="[[route]]" pattern="/:name" data="{{_router}}"></app-route>
 
-        <div class="menu">
-            <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-min-width="1" data-min-height="1" data-name="ape-weather">Weather</div>
-            <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-min-width="1" data-min-height="1" data-name="ape-time">Time</div>
-            <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-min-width="3" data-min-height="3" data-name="ape-wall">Wall</div>
+        <div class="menu" active$="[[_active]]">
+            <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-name="ape-weather">Väder</div>
+            <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-name="ape-time">Klocka</div>
+            <div class="menu-icon" draggable="true" on-dragstart="_listenerDragStart" data-name="ape-wall">Vägg</div>
 
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="1">Layout1</div>
             <div class="menu-icon" on-tap="_listenerTapChangeLayout" data-layout="2">Layout2</div>
@@ -193,6 +210,10 @@
                 _name: {
                     type: String
                 },
+                _active: {
+                    type: Boolean,
+                    value: false
+                },
                 route: {
                     type: Object
                 },
@@ -213,6 +234,7 @@
             /* Life cycle */
 
             attached() {
+                this.listen(this, `mousemove`, `_listenerMousemove`);
                 this._containers = Polymer.dom(this.root).querySelectorAll(`ape-container`);
                 this._activateLayout(this.layout);
             },
@@ -233,6 +255,13 @@
             },
 
             /* Listeners */
+
+            _listenerMousemove() {
+                this._active = true;
+                this.debounce(`debounce-inactive`, function() {
+                    this._active = false;
+                }, 3000);
+            },
 
             _listenerDragStart(event) {
                 const dataset = event.target.dataset;
