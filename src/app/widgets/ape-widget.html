@@ -1,0 +1,39 @@
+<script>
+
+    window.App = window.App || {};
+    window.App.WidgetBehavior = {
+
+        properties: {
+            size: {
+                type: String,
+                observer: `_observerSize`
+            },
+        },
+
+        _observerSize(size) {
+            if (typeof this.minWidth !== `number` || typeof this.minHeight !== `number`) {
+                console.error(`[WidgetBehavior][${this.is}]: Must have both getters 'minWidth' and 'minHeight' of type 'number'`);
+                return;
+            }
+
+            if (typeof this.activated !== `function` || typeof this.deactivated !== `function`) {
+                console.error(`[WidgetBehavior][${this.is}]: Must have both functions 'activated' and 'deactivated'`);
+                return;
+            }
+
+            if (size.width < this.minWidth || size.height < this.minHeight) {
+                this.deactivated();
+                this.fire(`widget-message`, {
+                    message: `Denna widget kräver en yta på minst ${this.minWidth}x${this.minHeight}`
+                });
+            } else {
+                this.activated();
+                this.fire(`widget-message`, {
+                    message: null
+                });
+            }
+        },
+
+    };
+
+</script>

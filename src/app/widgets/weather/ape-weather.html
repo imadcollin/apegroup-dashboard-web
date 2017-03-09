@@ -2,6 +2,7 @@
 <link rel="import" href="../../shared/firebase/firebase.html">
 <link rel="import" href="../../shared/icon/ape-icon.html">
 <link rel="import" href="../../shared/loader/ape-loader.html">
+<link rel="import" href="../ape-widget.html">
 
 <dom-module id="ape-weather">
 
@@ -55,12 +56,11 @@
 
             is: `ape-weather`,
 
+            behaviors: [
+                App.WidgetBehavior
+            ],
+
             properties: {
-                size: {
-                    type: String,
-                    observer: `_observerSize`,
-                    // reflectToAttribute: true
-                },
                 _loading: {
                     type: Boolean,
                     value: false,
@@ -75,9 +75,13 @@
                 },
             },
 
+            minWidth: 4,
+
+            minHeight: 4,
+
             /* Life cycle */
 
-            activate() {
+            activated() {
                 this._loading = true;
                 this._weatherRef = firebase.database().ref(`/weather`);
                 this._weatherRef.on(`value`, (data) => {
@@ -86,27 +90,13 @@
                 });
             },
 
-            deactivate() {
+            deactivated() {
                 if (this._weatherRef) {
                     this._weatherRef.off();
                 }
             },
 
-            /* Observers */
-
-            _observerSize(size) {
-                if (size.width < 2 || size.height < 2) {
-                    this.deactivate();
-                    this.fire(`widget-message`, {
-                        message: `Denna widget kräver en yta på minst 2x2`
-                    });
-                } else {
-                    this.activate();
-                    this.fire(`widget-message`, {
-                        message: null
-                    });
-                }
-            },
+            /* Private functions */
 
             _formatNumber(value, decimals) {
                 return parseInt(value).toFixed(decimals);
