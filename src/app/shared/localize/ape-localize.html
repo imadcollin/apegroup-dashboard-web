@@ -1,0 +1,21 @@
+<link rel="import" href="../../../assets/libs/app-localize-behavior/app-localize-behavior.html">
+
+<script>
+
+    window.App = window.App || {};
+    window.App.LocalizeBehavior = [Polymer.AppLocalizeBehavior, {
+
+        properties: {
+            language: {
+                type: String,
+                value: `en`
+            }
+        },
+
+        ready() {
+            this.loadResources(this.resolveUrl(`/assets/data/locales.json`));
+        }
+
+    }];
+
+</script>

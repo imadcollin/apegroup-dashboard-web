@@ -1,5 +1,6 @@
 <link rel="import" href="../../assets/libs/polymer/polymer.html">
 <link rel="import" href="../shared/firebase/firebase.html">
+<link rel="import" href="../shared/localize/ape-localize.html">
 
 <dom-module id="ape-home">
 
@@ -23,6 +24,7 @@
 
         </style>
 
+        <!--<div>[[localize('hello')]]</div>-->
         <a href="/board/ape">Board</a>
         <a href="/activity">Activity</a>
         <a href="/style">Style</a>
@@ -37,7 +39,7 @@
             is: `ape-home`,
 
             behaviors: [
-
+                App.LocalizeBehavior
             ],
 
             properties: {

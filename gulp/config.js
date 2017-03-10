@@ -24,7 +24,7 @@ const config = {
     },
     copy: {
         src: [
-            `./src/+(assets)/+(fonts|media|libs)/**/*`,
+            `./src/+(assets)/+(fonts|media|libs|data)/**/*`,
             // `./src/+(assets)/+(libs)/webcomponentsjs/webcomponents-lite.min.js`
         ],
         dest: `./build`
