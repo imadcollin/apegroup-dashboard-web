@@ -244,6 +244,20 @@
                 this._activateLayout(this.layout);
             },
 
+            _activate() {
+                this._boardRef = firebase.database().ref(`/boards/${this._name}`);
+                this._boardRef.on(`value`, (data) => {
+                    const value = data.val();
+                    this.layout = value.layout;
+                });
+            },
+
+            _deactivate() {
+                if (this._boardRef) {
+                    this._boardRef.off();
+                }
+            },
+
             /* Observers */
 
             _observerLayout(layout) {
@@ -279,20 +293,6 @@
             },
 
             /* Private functions */
-
-            _activate() {
-                this._boardRef = firebase.database().ref(`/boards/${this._name}`);
-                this._boardRef.on(`value`, (data) => {
-                    const value = data.val();
-                    this.layout = value.layout;
-                });
-            },
-
-            _deactivate() {
-                if (this._boardRef) {
-                    this._boardRef.off();
-                }
-            },
 
             _activateContainer(index, width, height) {
                 this._containers[index].active = true;
