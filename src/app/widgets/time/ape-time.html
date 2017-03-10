@@ -1,4 +1,5 @@
 <link rel="import" href="../../../assets/libs/polymer/polymer.html">
+<link rel="import" href="../ape-widget.html">
 
 <dom-module id="ape-time">
 
@@ -31,12 +32,11 @@
 
             is: `ape-time`,
 
+            behaviors: [
+                App.WidgetBehavior
+            ],
+
             properties: {
-                size: {
-                    type: String,
-                    observer: `_observerSize`,
-                    // reflectToAttribute: true
-                },
                 _time: {
                     type: String,
                 },
@@ -45,36 +45,24 @@
                 }
             },
 
+            minWidth: 1,
+
+            minHeight: 1,
+
             /* Life cycle */
 
-            activate() {
+            activated() {
                 const today = new Date();
                 const hour = today.getHours();
                 const minutes = today.getMinutes();
                 const hourFormatted = this._addZeroIfSingleDigit(hour);
                 const minutesFormatted = this._addZeroIfSingleDigit(minutes);
                 this._time =  `${hourFormatted}:${minutesFormatted}`;
-                this._timeoutId = setTimeout(this.activate.bind(this), 1000);
+                this._timeoutId = setTimeout(this.activated.bind(this), 1000);
             },
 
-            deactivate() {
+            deactivated() {
                 clearTimeout(this._timeoutId);
-            },
-
-            /* Observers */
-
-            _observerSize(size) {
-                if (size.width < 1 || size.height < 1) {
-                    this.deactivate();
-                    this.fire(`widget-message`, {
-                        message: `Denna widget kräver en yta på minst 6x6`
-                    });
-                } else {
-                    this.activate();
-                    this.fire(`widget-message`, {
-                        message: null
-                    });
-                }
             },
 
             /**

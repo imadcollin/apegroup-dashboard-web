@@ -1,6 +1,7 @@
 <link rel="import" href="../../../assets/libs/polymer/polymer.html">
 <link rel="import" href="../../shared/firebase/firebase.html">
 <link rel="import" href="../../../assets/libs/iron-image/iron-image.html">
+<link rel="import" href="../ape-widget.html">
 
 <dom-module id="ape-wall">
 
@@ -112,15 +113,10 @@
             is: `ape-wall`,
 
             behaviors: [
-
+                App.WidgetBehavior
             ],
 
             properties: {
-                size: {
-                    type: String,
-                    observer: `_observerSize`,
-                    // reflectToAttribute: true
-                },
                 _usersData: {
                     type: Object,
                     value: () => null
@@ -131,9 +127,13 @@
                 },
             },
 
+            minWidth: 6,
+
+            minHeight: 6,
+
             /* Life cycle */
 
-            activate() {
+            activated() {
                 this._loading = true;
                 this._usersRef = firebase.database().ref(`/users`);
                 this._usersRef.on(`value`, (data) => {
@@ -145,25 +145,9 @@
                 });
             },
 
-            deactivate() {
+            deactivated() {
                 if (this._usersRef) {
                     this._usersRef.off();
-                }
-            },
-
-            /* Observers */
-
-            _observerSize(size) {
-                if (size.width < 6 || size.height < 6) {
-                    this.deactivate();
-                    this.fire(`widget-message`, {
-                        message: `Denna widget kräver en yta på minst 6x6`
-                    });
-                } else {
-                    this.activate();
-                    this.fire(`widget-message`, {
-                        message: null
-                    });
                 }
             },
 
