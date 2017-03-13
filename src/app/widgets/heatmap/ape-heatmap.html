@@ -1,0 +1,607 @@
+<link rel="import" href="../../../assets/libs/polymer/polymer.html">
+<link rel="import" href="../../shared/firebase/firebase.html">
+<link rel="import" href="../ape-widget.html">
+
+<script src="../../../assets/libs/rxjs/dist/rx.all.js"></script>
+<script src="../../../assets/libs/pixi.js/dist/pixi.min.js"></script>
+
+<dom-module id="ape-heatmap">
+
+    <template>
+
+        <style>
+
+            :host {
+                position: relative;
+                display: block;
+                height: 100%;
+                width: 100%;
+            }
+
+            canvas {
+                width: 100%;
+            }
+
+        </style>
+
+        <ul id="settings">
+            <template is="dom-repeat" items="{{floors}}">
+                <li>
+                    <button on-click="createMap">{{item.name}}</button>
+                </li>
+            </template>
+    </ul>
+
+    <canvas id="map"></canvas>
+
+
+    </template>
+
+    <!-- aniamtion -->
+    <script>
+        let activeAnimation = []
+
+        function loop() {
+            let completed = []
+            activeAnimation.forEach((a, idx) => {
+                let done = a.update()
+                if (done) {
+                    completed.push(idx)
+                    if (a.completed) {
+                        a.completed()
+                    }
+                }
+            })
+
+            if (completed.length > 0) {
+                activeAnimation = activeAnimation.filter((a, idx) => !completed.includes(idx))
+            }
+            requestAnimationFrame(loop)
+        }
+        requestAnimationFrame(loop)
+
+        class Animation {
+
+            static fromValues(sprite, to) {
+                return Object.keys(to).reduce((r, k) => {
+                    r[k] = typeof sprite[k] === 'undefined' ? to[k] : sprite[k]
+                    return r
+                }, {})
+            }
+
+            constructor(sprite, to, duration) {
+                this.sprite = sprite
+                this.to = to
+                this.duration = duration
+                this.from = Animation.fromValues(sprite, to)
+                this.start = Date.now()
+
+                activeAnimation.push(this)
+            }
+
+            update() {
+                let d = Date.now() - this.start
+                let t = d / this.duration
+                let ended = t >= 1.0
+
+                if (ended) {
+                    Object.keys(this.to).forEach(k => {
+                        this.sprite[k] = this.to[k]
+                    })
+                } else {
+                    Object.keys(this.to).forEach(k => {
+                        let fv = this.from[k]
+                        let tv = this.to[k]
+
+                        // ease out
+                        this.sprite[k] = -(tv - fv) * t * (t - 2) + fv
+                    })
+                }
+
+                return ended
+            }
+
+            stop() {
+                let idx = activeAnimation.indexOf(this)
+                if (idx === -1) {
+                    return false
+                }
+
+                activeAnimation.splice(idx, 1)
+                if (typeof this.completed === 'function') {
+                    this.completed(false)
+                }
+                return true
+            }
+        }
+    </script>
+
+    <!-- colorize filter -->
+    <script>
+        const SHADER_SRC =
+            `
+        precision mediump float;
+
+        varying vec2 vTextureCoord;
+        uniform sampler2D uSampler;
+
+        const vec3 BLUE = vec3(0.0, 0.0, 1.0);
+        const vec3 CYAN = vec3(0.0, 1.0, 0.0); // green
+        const vec3 YELLOW = vec3(1.0, 1.0, 0.0);
+        const vec3 ORANGE = vec3(1.0, 0.65, 0.0);
+        const vec3 RED = vec3(1.0, 0.0, 0.0);
+
+        vec3 lerp(vec3 a, vec3 b, float t) {
+            return a + (b - a) * t;
+        }
+
+        void main(void) {
+          vec4 src = texture2D(uSampler, vTextureCoord);
+          //src *= 0.5;
+          //gl_FragColor = src;
+
+          float splits = 1.0 / (5.0 - 1.0);
+          float through = src.a / splits;
+          float from = floor(through);
+          float to = ceil(through);
+          float remainder = through - from;
+
+          vec3 fromColor;
+          vec3 toColor;
+
+          //
+          // from
+          //
+          if (int(from) == 0) {
+          fromColor = BLUE;
+          }
+
+          if (int(from) == 1) {
+            fromColor = CYAN;
+          }
+
+          if (int(from) == 2) {
+            fromColor = YELLOW;
+          }
+
+          if (int(from) == 3) {
+            fromColor = ORANGE;
+          }
+
+          if (int(from) == 4) {
+            fromColor = RED;
+          }
+
+          //
+          // to
+          //
+          if (int(to) == 0) {
+            toColor = BLUE;
+          }
+
+          if (int(to) == 1) {
+            toColor = CYAN;
+          }
+
+          if (int(to) == 2) {
+            toColor = YELLOW;
+          }
+
+          if (int(to) == 3) {
+            toColor = ORANGE;
+          }
+
+          if (int(to) == 4) {
+            toColor = RED;
+          }
+
+
+          vec3 c = mix(fromColor, toColor, remainder);
+          //return premultiply(vec4(c.r, c.g, c.b, src.a));
+          //gl_FragColor = vec4(c.r, c.g, c.b, src.a);
+          // gl_FragColor = vec4(c.r, c.g, c.b, src.a * 2.0);
+
+          // float a = min(src.a * 2.0, 1.0);
+          // gl_FragColor = vec4(c * a, a);
+          float a = clamp(src.a * 3.0, 0.0, 0.95);
+          gl_FragColor = vec4(c * a, a);
+          // gl_FragColor = vec4(src.rgb * src.a, src.a);
+        }
+        `
+
+        class ColorizeFilter extends PIXI.Filter {
+            constructor() {
+                super(null, SHADER_SRC)
+            }
+
+            apply(filterManager, input, output) {
+                filterManager.applyFilter(this, input, output, false)
+            }
+        }
+    </script>
+
+    <!-- heat-sprite -->
+    <script>
+        const textureData =
+            'data:image/png;base64,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'
+        const texture = PIXI.Texture.fromImage(textureData)
+
+        class HeatSprite extends PIXI.Sprite {
+            constructor() {
+                super(texture)
+
+                this.anchor.set(0.5, 0.5)
+                this.alpha = 0.7
+                this.interactive = true
+            }
+
+            animate(to, duration, cb) {
+                to = to || {}
+                duration = duration || 200
+
+                let anim = new Animation(this, to, duration)
+                anim.completed = cb
+
+                return anim
+            }
+        }
+    </script>
+
+    <!-- devices -->
+    <script>
+        function createObservable(ref, eventType) {
+            return Rx.Observable.create(observer => {
+                const callback = (snapshot, prevKey) => {
+                    let val = snapshot.val()
+                    if (snapshot.key) {
+                        val.$key = snapshot.key
+                    }
+                    if (prevKey) {
+                        val.$prevKey = prevKey
+                    }
+                    observer.next(val)
+                }
+
+                const cancelCallback = err => {
+                    observer.error(err)
+                }
+
+                const context = {}
+
+                ref.on(eventType, callback, cancelCallback, context)
+
+                return () => {
+                    console.log(`Done ${eventType}`);
+                    ref.off(eventType, callback, context)
+                }
+            })
+        }
+
+        function deviceEnter(ref) {
+            return createObservable(ref, 'child_added')
+        }
+
+        function deviceChange(ref) {
+            return createObservable(ref, 'child_changed')
+        }
+
+        function deviceExit(ref) {
+            return createObservable(ref, 'child_removed')
+        }
+    </script>
+
+    <!-- floor -->
+    <script>
+        const includesFloor = floor => {
+            return ({
+                device
+            }) => device.floors.includes(floor)
+        }
+
+        const notIncludesFloor = floor => {
+            return ({
+                device
+            }) => !device.floors.includes(floor)
+        }
+
+        const padding = 20
+
+        class Floor extends PIXI.Application {
+
+            static fromFloorImage(url, floorScale, opt) {
+                return new Promise((resolve, reject) => {
+                    console.log('fromFloorImage')
+                    let texture = PIXI.Texture.fromImage(url)
+                    if (texture.baseTexture.hasLoaded) {
+                        resolve(new Floor(texture, floorScale, opt))
+                    } else {
+                        texture.baseTexture.once('loaded', () => {
+                            console.log('loaded!')
+                            resolve(new Floor(texture, floorScale, opt))
+                        })
+                        texture.baseTexture.once('error', () => {
+                            reject(texture)
+                        })
+                    }
+
+                })
+            }
+
+            constructor(floorTexture, floorScale, opt) {
+                let options = Object.assign({
+                    resolution: window.devicePixelRatio
+                }, opt || {})
+                super(floorTexture.width + padding * 2, floorTexture.height + padding * 2, options)
+
+                this.options = options
+
+                this.floorScale = floorScale
+                this.floorWidth = floorTexture.width / floorScale
+                this.floorHeight = floorTexture.height / floorScale
+
+                this.renderer.backgroundColor = 0xffffff
+
+                let floor = new PIXI.Sprite(floorTexture)
+                floor.position.set(padding, padding)
+                this.stage.addChild(floor)
+
+                this.heat = new PIXI.Container()
+                this.heat.filters = [new PIXI.filters.BlurFilter(12), new ColorizeFilter()]
+                this.heat.position.set(50, 50)
+                this.stage.addChild(this.heat)
+
+                this.start()
+            }
+
+            findSprite({
+                device
+            }) {
+                return {
+                    device: device,
+                    sprite: this.heat.children.find(m => m.device && m.device.mac === device.mac)
+                }
+            }
+
+            createSprite() {
+                let sprite = new HeatSprite()
+                this.heat.addChild(sprite)
+                return sprite
+            }
+
+            findOrCreateSprite({
+                device
+            }) {
+                return {
+                    device,
+                    sprite: this.findSprite({
+                        device
+                    }).sprite || this.createSprite()
+                }
+            }
+
+            locationTransform(loc) {
+                let x = loc.x * this.floorScale
+                let y = (loc.y - this.floorHeight) * -1 * this.floorScale
+                return {
+                    x: x,
+                    y: y
+                }
+            }
+
+            start() {
+                if (!this.options) {
+                    return
+                }
+
+                if (this.started) {
+                    return
+                }
+
+                super.start()
+                this.started = true
+
+                let enterSource = this.options.enterSource
+                let changeSource = this.options.changeSource
+                let exitSoruce = this.options.exitSoruce
+                let floorName = this.options.floorName
+
+                // add or update
+                let obs1 = Rx.Observable.merge(enterSource, changeSource)
+                    .map(device => ({
+                        device
+                    }))
+                    .filter(includesFloor(floorName))
+                    .map(this.findOrCreateSprite.bind(this))
+                    .map(({
+                        device,
+                        sprite
+                    }) => {
+                        let idx = device.floors.indexOf(floorName)
+                        if (idx === -1) {
+                            return {
+                                device,
+                                sprite
+                            }
+                        }
+
+                        let loc = device.locations[idx]
+                        if (!loc) {
+                            return {
+                                device,
+                                sprite
+                            }
+                        }
+
+                        let location = this.locationTransform(loc)
+
+                        return {
+                            device,
+                            sprite,
+                            location
+                        }
+                    })
+                this.sub1 = obs1.subscribe(this.addOrUpdateDevice.bind(this), err => console.error(err), () => console.log('Done update'))
+
+                let obs2 = Rx.Observable.merge(
+                    changeSource
+                    .map(device => ({
+                        device
+                    }))
+                    .filter(notIncludesFloor(floorName))
+                    .map(this.findSprite.bind(this))
+                    .filter(({
+                        device,
+                        sprite
+                    }) => !!sprite),
+                    exitSoruce
+                    .map(device => ({
+                        device
+                    }))
+                    .map(this.findSprite.bind(this))
+                    .filter(({
+                        device,
+                        sprite
+                    }) => !!sprite))
+                this.sub2 = obs2.subscribe(this.removeDevice.bind(this), err => console.error(err))
+            }
+
+            stop() {
+                super.stop()
+                this.started = false
+
+                if (this.sub1) {
+                    console.log('unsubscribe 1')
+                    console.log(this.sub1)
+                    this.sub1.dispose()
+                    this.sub1 = null
+                }
+
+                if (this.sub2) {
+                    console.log('unsubscribe 2')
+                    this.sub2.dispose()
+                    this.sub2 = null
+                }
+
+                this.heat.removeChildren()
+            }
+
+            addOrUpdateDevice({
+                device,
+                sprite,
+                location
+            }) {
+                if (!location) {
+                    console.log('No locaiton for device ', device)
+                    return
+                }
+
+                if (sprite.device) {
+                    sprite.animate({
+                        x: location.x,
+                        y: location.y,
+                        alpha: 0.7
+                    }, 5000)
+                } else {
+                    sprite.alpha = 0.0
+                    sprite.position.set(location.x, location.y)
+                    sprite.animate({
+                        alpha: 0.7
+                    }, 5000)
+                }
+
+                sprite.device = device
+            }
+
+            removeDevice({
+                device,
+                sprite
+            }) {
+                if (!sprite) {
+                    return
+                }
+
+                sprite.device = null
+                sprite.animate({
+                    alpha: 0.0
+                }, 5000, () => {
+                    this.heat.removeChild(sprite)
+                })
+            }
+        }
+    </script>
+
+    <script>
+        Polymer({
+
+            is: `ape-heatmap`,
+
+            behaviors: [
+                App.WidgetBehavior
+            ],
+
+            ready() {
+                super.ready()
+                this.floors = [{
+                        name: 'Floor 8_APE',
+                        map: '/assets/media/floor8.png',
+                        scale: 29.5
+                    },
+                    {
+                        name: 'Floor 9_APE',
+                        map: '/assets/media/floor9.png',
+                        scale: 29.5
+                    }
+                ]
+            },
+
+            properties: {},
+
+            minWidth: 1,
+
+            minHeight: 1,
+
+            createMap(e) {
+                let name = e.model.get('item.name')
+                let map = e.model.get('item.map')
+                let scale = e.model.get('item.scale')
+
+                const db = firebase.database()
+                const ref = db.ref('/devices/apegroup')
+
+                let enterSource = deviceEnter(ref)
+                let changeSource = deviceChange(ref)
+                let exitSoruce = deviceExit(ref)
+
+                let opt = {
+                    enterSource,
+                    changeSource,
+                    exitSoruce,
+                    floorName: name,
+                    view: this.$.map
+                }
+
+                Floor.fromFloorImage(map, scale, opt).then(floor => {
+                    this.floor = floor
+                })
+
+                this.$.settings.style.display = 'none'
+            },
+
+            /* Life cycle */
+
+            activated() {
+                if (this.floor) {
+                    this.floor.start()
+                }
+            },
+
+            deactivated() {
+                if (this.floor) {
+                    this.floor.stop()
+                }
+            },
+
+        });
+    </script>
+
+</dom-module>
