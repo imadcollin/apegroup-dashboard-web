@@ -23,28 +23,19 @@ deployment:
     tag: /^v\d+\.\d+\.\d+-build\.\d+$/
     owner: apegroup
     commands:
-      # BUILD
       - npm run gulp build --dev
-
-      # FIREBASE DEPLOYMENT
       - firebase deploy --project=$DEV_PROJECT_NAME --token=$FIREBASE_TOKEN --message=$CIRCLE_TAG --only=hosting --non-interactive
 
   stage:
     tag: /^v\d+\.\d+\.\d+-rc\.\d+$/
     owner: apegroup
     commands:
-      # BUILD
       - npm run gulp build --stg
-
-      # FIREBASE DEPLOYMENT
     #   - firebase deploy --project=$STG_PROJECT_NAME --token=$FIREBASE_TOKEN --message=$VERSION --only=hosting --non-interactive
 
   prod:
     tag: /^v\d+\.\d+\.\d+$/
     owner: apegroup
     commands:
-      # BUILD
       - npm run gulp build --prd
-
-      # FIREBASE DEPLOYMENT
     #   - firebase deploy --project=$PRD_PROJECT_NAME --token=$FIREBASE_TOKEN --message=$VERSION --only=hosting --non-interactive
