@@ -1,0 +1,99 @@
+<link rel="import" href="../../../assets/libs/polymer/polymer.html">
+<link rel="import" href="../ape-widget.html">
+
+<dom-module id="ape-slack">
+
+    <template>
+
+        <style>
+
+            :host {
+                position: relative;
+                display: flex;
+                width: 100%;
+                height: 100%;
+                flex-direction: column;
+                padding: 1.6rem;
+                justify-content: center;
+            }
+
+            .channel {
+                text-transform: uppercase;
+                margin-bottom: .4rem;
+            }
+
+            .text {
+                word-break: break-all;
+                text-align: center;
+                margin-bottom: .8rem;
+                font-size: 2rem;
+                font-family: var(--font-family-black);
+            }
+
+            .username {
+                text-align: right;
+                font-size: 1.3rem;
+            }
+
+        </style>
+
+        <div class="channel">[[_slackData.channel.name]]</div>
+        <div class="text">[[_slackData.text]]</div>
+        <div class="username">[[_slackData.user.real_name]]</div>
+
+    </template>
+
+    <script>
+
+        Polymer({
+
+            is: `ape-slack`,
+
+            behaviors: [
+                App.WidgetBehavior
+            ],
+
+            properties: {
+                _loading: {
+                    type: Boolean,
+                    value: false,
+                },
+                _slackData: {
+                    type: Object,
+                    value: () => null
+                },
+                _slackRef: {
+                    type: Object,
+                    value: () => null
+                },
+            },
+
+            minWidth: 1,
+
+            minHeight: 1,
+
+            /* Life cycle */
+
+            activated() {
+                console.log(`Slack activated`);
+                this._loading = true;
+                const channel = `C0253761X`;
+                this._slackRef = firebase.database().ref(`/slack/messages/${channel}/message`);
+                this._slackRef.on(`value`, (data) => {
+                    this._loading = false;
+                    this._slackData = data.val();
+                });
+            },
+
+            deactivated() {
+                console.log(`Slack deactivated`);
+                if (this._slackRef) {
+                    this._slackRef.off();
+                }
+            },
+
+        });
+
+    </script>
+
+</dom-module>
