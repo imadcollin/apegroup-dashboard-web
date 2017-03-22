@@ -188,10 +188,13 @@
             },
 
             _sortByFirstName(a, b) {
-                const userFirstNameA = a.firstname.toLowerCase();
-                const userFirstNameB = b.firstname.toLowerCase();
-                if (userFirstNameA === userFirstNameB) return 0;
-                return userFirstNameA < userFirstNameB ? -1 : 1;
+                if (a.firstname !== undefined && b.firstname !== undefined) {
+                    const userFirstNameA = a.firstname.toLowerCase();
+                    const userFirstNameB = b.firstname.toLowerCase();
+                    if (userFirstNameA === userFirstNameB) return 0;
+                    return userFirstNameA < userFirstNameB ? -1 : 1;
+                }
+                return 1;
             },
 
         });
