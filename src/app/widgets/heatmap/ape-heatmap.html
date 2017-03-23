@@ -20,8 +20,19 @@
 
             canvas {
                 position: relative;
-                max-width: 100%;
-                max-height: 100%;
+                display: none;
+            }
+
+            .fill-width {
+                display: block;
+                width: 100%;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .fill-height {
+                display: block;
+                height: 100%;
                 left: 50%;
                 transform: translateX(-50%);
             }
@@ -34,9 +45,9 @@
                     <button on-click="createMap">{{item.name}}</button>
                 </li>
             </template>
-    </ul>
+        </ul>
 
-    <canvas id="map"></canvas>
+        <canvas id="map" class$="{{mapFill}}"></canvas>
 
 
     </template>
@@ -540,8 +551,23 @@
             is: `ape-heatmap`,
 
             behaviors: [
-                App.WidgetBehavior
+                App.WidgetBehavior,
+                Polymer.IronResizableBehavior
             ],
+
+            listeners: {
+                'iron-resize': 'onResize'
+            },
+
+            onResize() {
+                setTimeout(() => this.updateMapSize(), 0)
+            },
+
+            updateMapSize() {
+                let r = this.offsetHeight / this.offsetWidth
+                let mapR = this.$.map.height / this.$.map.width
+                this.mapFill = r >= mapR ? 'fill-width' : 'fill-height'
+            },
 
             ready() {
                 super.ready()
@@ -558,7 +584,12 @@
                 ]
             },
 
-            properties: {},
+            properties: {
+                mapFill: {
+                    type: String,
+                    value: 'fill-width'
+                }
+            },
 
             minWidth: 1,
 
@@ -586,6 +617,7 @@
 
                 Floor.fromFloorImage(map, scale, opt).then(floor => {
                     this.floor = floor
+                    this.updateMapSize()
                 })
 
                 this.$.settings.style.display = 'none'
@@ -597,6 +629,8 @@
                 if (this.floor) {
                     this.floor.start()
                 }
+
+                this.updateMapSize()
             },
 
             deactivated() {
