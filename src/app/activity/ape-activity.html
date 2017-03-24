@@ -41,7 +41,7 @@
 
         <iron-pages id="pages" attr-for-selected="selected" selected-attribute="visible" on-iron-select="_listenerIronSelect">
             <ape-activity-wall id="activity" selected="activity" on-activity-state="_listenerActivityState"></ape-activity-wall>
-            <ape-weather-wall id="weather" selected="weather" on-weather-state="_listenerWeatherState"></ape-weather-wall>
+            <!--<ape-weather-wall id="weather" selected="weather" on-weather-state="_listenerWeatherState"></ape-weather-wall>-->
             <ape-birthday-wall id="birthday" selected="birthday" on-birthday-state="_listenerBirthdayState"></ape-birthday-wall>
         </iron-pages>
 
@@ -73,11 +73,12 @@
             _observerVisible(visible) {
                 if (visible) {
                     this.$.activity.activate();
-                    this.$.weather.activate();
+                    // this.$.weather.activate();
                     this.$.birthday.activate();
                     this._startTicker(0);
                 } else {
                     this.$.activity.deactivate();
+                    // this.$.weather.deactivate();
                     this.$.birthday.deactivate();
                     this._stopTicker();
                 }
