@@ -1,0 +1,187 @@
+<link rel="import" href="../../assets/libs/polymer/polymer.html">
+<link rel="import" href="widget.html">
+
+<dom-module id="ape-widget-layout">
+
+    <template>
+
+        <style>
+            :host, :host > div {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%
+            }
+
+            .grid {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            #smallGrid path {
+                stroke: rgb(190, 190, 250);
+                stroke-width: 0.5
+            }
+
+            #grid path {
+                stroke: rgb(150, 150, 220);
+                stroke-width: 1;
+            }
+        </style>
+
+        <div on-mousedown="handleMouseDown" on-mouseup="handleMouseUp" on-mousemove="handleMouseMove">
+            <div class="grid">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" preserveAspectRatio="none">
+                    <defs>
+                        <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <path d="M 10 0 L 0 0 0 10" fill="none" vector-effect="non-scaling-stroke"/>
+                        </pattern>
+                        <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <rect width="100" height="100" fill="url(#smallGrid)"/>
+                            <path d="M 100 0 L 0 0 0 100" fill="none" vector-effect="non-scaling-stroke"/>
+                        </pattern>
+                    </defs>
+
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                </svg>
+            </div>
+            <content></content>
+        </div>
+
+    </template>
+
+    <script>
+
+        Polymer({
+
+            is: `ape-widget-layout`,
+
+            properties: {
+            },
+
+            observers: [
+            ],
+
+            /* Life cycle */
+
+            attached() {
+            },
+
+            handleMouseDown (e) {
+                let target
+                for (let i = e.path.length - 1; i >= 0; i--) {
+                    if (e.path[i].is === 'ape-widget') {
+                        target = e.path[i]
+                        break
+                    }
+                }
+
+                if (target) {
+
+
+                    let top = e.path[0]
+                    if (!top) {
+                        return
+                    }
+
+                    if (!top.classList.contains('resize-handle')) {
+                        return
+                    }
+
+                    e.preventDefault()
+
+                    if (top.classList.contains('resize-handle-nw')) {
+                        this._widgetHandleType = 'nw'
+                    } else if (top.classList.contains('resize-handle-ne')) {
+                        this._widgetHandleType = 'ne'
+                    } else if (top.classList.contains('resize-handle-se')) {
+                        this._widgetHandleType = 'se'
+                    } else if (top.classList.contains('resize-handle-sw')) {
+                        this._widgetHandleType = 'sw'
+                    }
+
+                    this._widget = target
+                    this._widget.classList.add(`resize`)
+                }
+            },
+
+            handleMouseUp (e) {
+                e.preventDefault()
+                if (this._widget) {
+                    this._widget.classList.remove(`resize`)
+                    this._widget = null
+                }
+            },
+
+            handleMouseMove (e) {
+                if (this._widget) {
+                    e.preventDefault()
+
+                    let x = Number.parseInt(e.clientX / this.offsetWidth * 30)
+                    let y = Number.parseInt(e.clientY / this.offsetHeight * 30)
+
+                    let pos = this._widget.position
+                    this.updatePositionForResize(x, y, pos, this._widgetHandleType)
+
+
+                    let widgets = Polymer.dom(this).querySelectorAll('ape-widget:not(.resize)')
+
+                    for (let w of widgets) {
+                        if (this.positionCollide(pos, w.position)) {
+                            return false
+                        }
+                    }
+
+                    this._widget.position = pos
+                }
+            },
+
+            updatePositionForResize(x, y, pos, type) {
+                switch (type) {
+                    case 'nw':
+                        if (pos.bottom > y) {
+                            pos.top = y
+                        }
+                        if (pos.right > x) {
+                            pos.left = x
+                        }
+                        break
+                    case 'ne':
+                        if (pos.bottom > y) {
+                            pos.top = y
+                        }
+                        if (pos.left < x + 1) {
+                            pos.right = x + 1
+                        }
+                        break
+                    case 'se':
+                        if (pos.left < x + 1) {
+                            pos.right = x + 1
+                        }
+                        if (pos.top < y + 1) {
+                            pos.bottom = y + 1
+                        }
+                        break
+                    case 'sw':
+                        if (pos.top < y + 1) {
+                            pos.bottom = y + 1
+                        }
+                        if (pos.right > x) {
+                            pos.left = x
+                        }
+                    break
+                }
+            },
+
+            positionCollide (a, b) {
+                return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+            }
+        });
+
+    </script>
+
+</dom-module>

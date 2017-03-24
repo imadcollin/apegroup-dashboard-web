@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <title>Webcomponent test</title>
     <script src="../../web-component-tester/browser.js"></script>
-    <link rel="import" href="ape-board-experiment.html">
+    <link rel="import" href="ape-board.html">
 
 </head>
 
@@ -14,13 +14,13 @@
 
     <test-fixture id="basic">
         <template>
-            <ape-board-experiment></ape-board-experiment>
+            <ape-board></ape-board>
         </template>
     </test-fixture>
 
     <script>
 
-        suite(`<ape-board-experiment>`, () => {
+        suite(`<ape-board>`, () => {
 
             let element;
             setup(() => {
@@ -28,7 +28,7 @@
             });
 
             test(`has correct component name`, () => {
-                expect(element.is).to.be.equal(`ape-board-experiment`);
+                expect(element.is).to.be.equal(`ape-board`);
             });
 
         });

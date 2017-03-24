@@ -1,0 +1,56 @@
+<link rel="import" href="../../assets/libs/polymer/polymer.html">
+<link rel="import" href="../shared/container/ape-container.html">
+<link rel="import" href="widget-layout.html">
+<link rel="import" href="widget.html">
+
+<dom-module id="ape-board-experiment">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+            }
+        </style>
+
+        <ape-widget-layout>
+            <ape-widget top="0" right="16" bottom="3" left="7"><h1>Board Experiment 🤡</h1></ape-widget>
+            <ape-widget top="3" right="10" bottom="8" left="1"><ape-time size=""></ape-time></ape-widget>
+            <ape-widget top="10" right="25" bottom="20" left="10"><ape-heatmap size=""></ape-heatmap></ape-widget>
+            <ape-widget top="0" right="30" bottom="10" left="20"><ape-weather size=""></ape-weather></ape-widget>
+            <ape-widget top="22" right="12" bottom="30" left="0"><ape-slack size=""></ape-slack></ape-widget>
+        </ape-widget-layout>
+
+    </template>
+
+    <script>
+
+        Polymer({
+
+            is: `ape-board-experiment`,
+
+            properties: {
+            },
+
+            observers: [
+            ],
+
+            /* Life cycle */
+
+            attached() {
+            }
+
+
+
+        });
+
+    </script>
+
+</dom-module>
