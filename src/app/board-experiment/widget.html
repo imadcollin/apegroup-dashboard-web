@@ -66,12 +66,12 @@
                 height: 100%;
             }
         </style>
-            <div class="widget-content"><content></content></div>
-            <div class="resize-handle resize-handle-nw"></div>
-            <div class="resize-handle resize-handle-ne"></div>
-            <div class="resize-handle resize-handle-se"></div>
-            <div class="resize-handle resize-handle-sw"></div>
-        </div>
+
+        <div class="widget-content"><content></content></div>
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-sw"></div>
 
     </template>
 
@@ -80,6 +80,10 @@
         Polymer({
 
             is: `ape-widget`,
+
+            behaviors: [
+                Polymer.IronResizableBehavior
+            ],
 
             properties: {
                 top: {
@@ -123,6 +127,7 @@
                 this.customStyle['--widget-bottom'] = '' + this.bottom
                 this.customStyle['--widget-left'] = '' + this.left
                 this.updateStyles()
+                this.debounce('updatePosition', this.notifyResize)
             },
 
             set position ({top, right, bottom, left}) {
