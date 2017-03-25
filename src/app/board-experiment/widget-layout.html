@@ -88,11 +88,28 @@
                         return
                     }
 
+                    e.preventDefault()
+
                     if (!top.classList.contains('resize-handle')) {
+                        this.moveAsyncHandler = this.async(() => {
+                            this.moveAsyncHandler = null
+                            this._widget = target
+                            this._widgetResizeEdges = ['move']
+                            this._widget.toggleClass('move', true)
+                            this._widget.toggleClass('resize', true)
+
+                            let x = Number.parseInt(e.clientX / this.offsetWidth * 30)
+                            let y = Number.parseInt(e.clientY / this.offsetHeight * 30)
+
+                            this._widgetMoveOffset = {
+                                top: y - this._widget.top,
+                                right: x - this._widget.right,
+                                bottom: y - this._widget.bottom,
+                                left: x - this._widget.left,
+                            }
+                        }, 500)
                         return
                     }
-
-                    e.preventDefault()
 
                     if (top.classList.contains('resize-handle-nw')) {
                         this._widgetResizeEdges = ['top', 'left']
@@ -114,14 +131,19 @@
 
 
                     this._widget = target
-                    this._widget.classList.add(`resize`)
+                    this._widget.toggleClass('resize', true)
                 }
             },
 
             handleMouseUp (e) {
                 e.preventDefault()
+                if (this.moveAsyncHandler) {
+                    this.cancelAsync(this.moveAsyncHandler)
+                    this.moveAsyncHandler = null
+                }
                 if (this._widget) {
-                    this._widget.classList.remove(`resize`)
+                    this._widget.toggleClass('move', false)
+                    this._widget.toggleClass('resize', false)
                     this._widget = null
                 }
             },
@@ -143,6 +165,11 @@
                         if (this.positionCollide(pos, w.position)) {
                             return false
                         }
+                    }
+
+                    // don't move outside viewport
+                    if (pos.top < 0 || pos.right > 30 || pos.bottom > 30 || pos.left < 0) {
+                        return
                     }
 
                     this._widget.position = pos
@@ -171,6 +198,12 @@
                             if (pos.right > x) {
                                 pos.left = x
                             }
+                        } break
+                        case 'move': {
+                            pos.top = y - this._widgetMoveOffset.top
+                            pos.right = x - this._widgetMoveOffset.right
+                            pos.bottom = y - this._widgetMoveOffset.bottom
+                            pos.left = x - this._widgetMoveOffset.left
                         } break
                     }
                 }
