@@ -95,14 +95,23 @@
                     e.preventDefault()
 
                     if (top.classList.contains('resize-handle-nw')) {
-                        this._widgetHandleType = 'nw'
+                        this._widgetResizeEdges = ['top', 'left']
                     } else if (top.classList.contains('resize-handle-ne')) {
-                        this._widgetHandleType = 'ne'
+                        this._widgetResizeEdges = ['top', 'right']
                     } else if (top.classList.contains('resize-handle-se')) {
-                        this._widgetHandleType = 'se'
+                        this._widgetResizeEdges = ['right', 'bottom']
                     } else if (top.classList.contains('resize-handle-sw')) {
-                        this._widgetHandleType = 'sw'
+                        this._widgetResizeEdges = ['bottom', 'left']
+                    } else if (top.classList.contains('resize-handle-top')) {
+                        this._widgetResizeEdges = ['top']
+                    } else if (top.classList.contains('resize-handle-right')) {
+                        this._widgetResizeEdges = ['right']
+                    } else if (top.classList.contains('resize-handle-bottom')) {
+                        this._widgetResizeEdges = ['bottom']
+                    } else if (top.classList.contains('resize-handle-left')) {
+                        this._widgetResizeEdges = ['left']
                     }
+
 
                     this._widget = target
                     this._widget.classList.add(`resize`)
@@ -125,7 +134,7 @@
                     let y = Number.parseInt(e.clientY / this.offsetHeight * 30)
 
                     let pos = this._widget.position
-                    this.updatePositionForResize(x, y, pos, this._widgetHandleType)
+                    this.updatePositionForResize(x, y, pos, this._widgetResizeEdges)
 
 
                     let widgets = Polymer.dom(this).querySelectorAll('ape-widget:not(.resize)')
@@ -140,40 +149,30 @@
                 }
             },
 
-            updatePositionForResize(x, y, pos, type) {
-                switch (type) {
-                    case 'nw':
-                        if (pos.bottom > y) {
-                            pos.top = y
-                        }
-                        if (pos.right > x) {
-                            pos.left = x
-                        }
-                        break
-                    case 'ne':
-                        if (pos.bottom > y) {
-                            pos.top = y
-                        }
-                        if (pos.left < x + 1) {
-                            pos.right = x + 1
-                        }
-                        break
-                    case 'se':
-                        if (pos.left < x + 1) {
-                            pos.right = x + 1
-                        }
-                        if (pos.top < y + 1) {
-                            pos.bottom = y + 1
-                        }
-                        break
-                    case 'sw':
-                        if (pos.top < y + 1) {
-                            pos.bottom = y + 1
-                        }
-                        if (pos.right > x) {
-                            pos.left = x
-                        }
-                    break
+            updatePositionForResize(x, y, pos, edges) {
+                for (let edge of edges) {
+                    switch (edge) {
+                        case 'top': {
+                            if (pos.bottom > y) {
+                                pos.top = y
+                            }
+                        } break
+                        case 'right': {
+                            if (pos.left < x + 1) {
+                                pos.right = x + 1
+                            }
+                        } break
+                        case 'bottom': {
+                            if (pos.top < y + 1) {
+                                pos.bottom = y + 1
+                            }
+                        } break
+                        case 'left': {
+                            if (pos.right > x) {
+                                pos.left = x
+                            }
+                        } break
+                    }
                 }
             },
 

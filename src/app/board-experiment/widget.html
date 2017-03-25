@@ -30,37 +30,82 @@
                 overflow: hidden;
 
                 user-select: none;
+
+                --resize-handle-offset: -2px;
+                --resize-handle-size: 8px;
+                --resize-handle-corner: {
+                    width: var(--resize-handle-size);
+                    height: var(--resize-handle-size);
+                };
+            }
+
+            :host:hover {
+                z-index: 100;
             }
 
             .resize-handle {
-                width: 8px;
-                height: 8px;
                 background: transparent;
                 position: absolute;
             }
 
             .resize-handle-nw {
-                top: -2px;
-                left: -2px;
+                @apply --resize-handle-corner;
+                top: var(--resize-handle-offset);
+                left: var(--resize-handle-offset);
                 cursor: nwse-resize;
             }
 
             .resize-handle-ne {
-                top: -2px;
-                right: -2px;
+                @apply --resize-handle-corner;
+                top: var(--resize-handle-offset);
+                right: var(--resize-handle-offset);
                 cursor: nesw-resize;
             }
 
             .resize-handle-se {
-                right: -2px;
-                bottom: -2px;
+                @apply --resize-handle-corner;
+                right: var(--resize-handle-offset);
+                bottom: var(--resize-handle-offset);
                 cursor: nwse-resize;
             }
 
             .resize-handle-sw {
-                left: -2px;
-                bottom: -2px;
+                @apply --resize-handle-corner;
+                left: var(--resize-handle-offset);
+                bottom: var(--resize-handle-offset);
                 cursor: nesw-resize;
+            }
+
+            .resize-handle-top {
+                top: var(--resize-handle-offset);
+                right: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                left: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                height: var(--resize-handle-size);
+                cursor: ns-resize;
+            }
+
+            .resize-handle-right {
+                top: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                right: var(--resize-handle-offset);
+                bottom: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                width: var(--resize-handle-size);
+                cursor: ew-resize;
+            }
+
+            .resize-handle-bottom {
+                right: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                bottom: var(--resize-handle-offset);
+                left: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                height: var(--resize-handle-size);
+                cursor: ns-resize;
+            }
+
+            .resize-handle-left {
+                top: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                left: var(--resize-handle-offset);
+                bottom: calc(var(--resize-handle-offset) + var(--resize-handle-size));
+                width: var(--resize-handle-size);
+                cursor: ew-resize;
             }
 
             .widget-content {
@@ -74,6 +119,10 @@
         <div class="resize-handle resize-handle-ne"></div>
         <div class="resize-handle resize-handle-se"></div>
         <div class="resize-handle resize-handle-sw"></div>
+        <div class="resize-handle resize-handle-top"></div>
+        <div class="resize-handle resize-handle-right"></div>
+        <div class="resize-handle resize-handle-bottom"></div>
+        <div class="resize-handle resize-handle-left"></div>
 
     </template>
 
@@ -129,7 +178,7 @@
                 this.customStyle['--widget-bottom'] = '' + this.bottom
                 this.customStyle['--widget-left'] = '' + this.left
                 this.updateStyles()
-                this.debounce('updatePosition', this.notifyResize)
+                this.debounce('updatePosition', this.notifyResize, 100)
             },
 
             set position ({top, right, bottom, left}) {
